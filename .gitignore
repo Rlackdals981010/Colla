@@ -35,3 +35,14 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### env ###
+src/main/resources/.env
+/.env
+
+# Application config
+application.yml
+application.properties
+
+## log
+*.log
