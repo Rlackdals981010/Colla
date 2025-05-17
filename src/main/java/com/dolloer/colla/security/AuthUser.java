@@ -1,17 +1,47 @@
 package com.dolloer.colla.security;
 
 
+import com.dolloer.colla.domain.auth.entity.Member;
 import lombok.Getter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Getter
-public class AuthUser {
-    private final Long userId;
-    private final String name;
-    private final String email;
+public class AuthUser implements UserDetails {
 
-    public AuthUser(Long userId, String name, String email) {
-        this.userId = userId;
-        this.name = name;
-        this.email = email;
+    private final Member member;
+
+    public AuthUser(Member member) {
+        this.member = member;
     }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(); // 권한 필요시 ROLE 반환
+    }
+
+    @Override
+    public String getPassword() {
+        return member.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return member.getEmail();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return true; }
 }

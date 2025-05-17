@@ -4,6 +4,7 @@ package com.dolloer.colla.response.exception;
 
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseAuthEnum;
+import com.dolloer.colla.response.response.ApiResponseEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,13 +19,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponse<?>> handleCustomException(CustomException ex) {
 
-        ApiResponseAuthEnum errorEnum = ex.getApiResponseAuthEnum();
+        ApiResponseEnum errorEnum = ex.getApiResponseEnum();
 
         log.warn("CustomException 발생: [{}] {}", errorEnum.getHttpStatus(), errorEnum.getMessage());
 
         return ResponseEntity
-            .status(ex.getApiResponseAuthEnum().getHttpStatus()) // HTTP 상태 코드 설정
-            .body(ApiResponse.error(ex.getApiResponseAuthEnum().getMessage())); // 에러 메시지 응답
+                .status(errorEnum.getHttpStatus())
+                .body(ApiResponse.error(errorEnum.getMessage()));
     }
 
     // 기타 예외 처리 (NULL 포인터, ILLEGAL ARGUMENT 등)

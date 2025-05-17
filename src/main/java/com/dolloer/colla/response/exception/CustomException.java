@@ -1,15 +1,15 @@
 package com.dolloer.colla.response.exception;
 
 
-import com.dolloer.colla.response.response.ApiResponseAuthEnum;
+import com.dolloer.colla.response.response.ApiResponseEnum;
 import lombok.Getter;
 
 @Getter
 public class CustomException extends RuntimeException {
-    private final ApiResponseAuthEnum apiResponseAuthEnum;
+    private final ApiResponseEnum apiResponseEnum;
 
-    public CustomException(ApiResponseAuthEnum apiResponseAuthEnum) {
-        super(apiResponseAuthEnum.getMessage());
-        this.apiResponseAuthEnum = apiResponseAuthEnum;
+    public CustomException(ApiResponseEnum apiResponseEnum) {
+        super(apiResponseEnum.getMessage());
+        this.apiResponseEnum = apiResponseEnum;
     }
 }
