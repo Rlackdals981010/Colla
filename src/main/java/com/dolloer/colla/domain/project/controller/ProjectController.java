@@ -2,11 +2,13 @@ package com.dolloer.colla.domain.project.controller;
 
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
 import com.dolloer.colla.domain.project.dto.request.InviteMembersRequest;
+import com.dolloer.colla.domain.project.dto.response.MemberSearchResponse;
 import com.dolloer.colla.domain.project.dto.response.ProjectResponse;
 import com.dolloer.colla.domain.project.service.ProjectService;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import com.dolloer.colla.security.AuthUser;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,17 +31,43 @@ public class ProjectController {
         return ResponseEntity.ok(ApiResponse.success(projectResponse, ApiResponseProjectEnum.PROJECT_CREATE_SUCCESS.getMessage()));
     }
 
-    @PostMapping("/{projectId}/invite") // 프로젝트 초대
-    public ResponseEntity<ApiResponse<Void>> inviteProject(@AuthenticationPrincipal AuthUser authUser,@PathVariable Long projectId, @RequestBody InviteMembersRequest inviteMembersRequest){
-        projectService.inviteProject(authUser.getMember(), projectId ,inviteMembersRequest.getMemberIds());
-        return ResponseEntity.ok(ApiResponse.success(ApiResponseProjectEnum.PROJECT_CREATE_SUCCESS.getMessage()));
+    // 이메일 기반 멤버 검색 (초대 대상 필터링)
+    @GetMapping("/{projectId}/invite/search")
+    public ResponseEntity<ApiResponse<MemberSearchResponse>> searchMemberForInvite(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @RequestParam String email
+    ) {
+        MemberSearchResponse result = projectService.searchMemberByEmailForInvite(authUser.getMember(), projectId, email);
+        return ResponseEntity.ok(ApiResponse.success(result, "초대 대상 검색 완료"));
     }
 
+    // 초대 메일 전송
+    @PostMapping("/{projectId}/invite")
+    public ResponseEntity<ApiResponse<Void>> inviteProject(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @RequestBody InviteMembersRequest inviteMembersRequest
+    ) throws MessagingException {
+        projectService.inviteMembers(authUser.getMember(), projectId, inviteMembersRequest.getMemberIds());
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseProjectEnum.PROJECT_INVITE_SUCCESS.getMessage()));
+    }
 
-//    @GetMapping
-//    public ResponseEntity<ApiResponse<ProjectSummaryResponse>> getProjectList(@AuthenticationPrincipal AuthUser authUser) {
-//        ProjectSummaryResponse projectSummaryResponse = projectService.getProjectList(authUser.getMember());
-//        return ResponseEntity.ok(ApiResponse.success(projectSummaryResponse, ApiResponseProjectEnum.PROJECT_LIST_GET_SUCCESS.getMessage()));
-//    }
+    @PostMapping("/{projectId}/invitations/accept")
+    public ResponseEntity<ApiResponse<Void>> acceptInvitation(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId) {
 
+        projectService.acceptInvitation(authUser.getMember(), projectId);
+        return ResponseEntity.ok(ApiResponse.success("프로젝트 초대를 수락했습니다."));
+    }
+
+    @PostMapping("/{projectId}/invitations/reject")
+    public ResponseEntity<ApiResponse<Void>> rejectInvitation(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId) {
+
+        projectService.rejectInvitation(authUser.getMember(), projectId);
+        return ResponseEntity.ok(ApiResponse.success("프로젝트 초대를 거절했습니다."));
+    }
 }

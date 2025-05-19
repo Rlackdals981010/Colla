@@ -23,9 +23,11 @@ public class ProjectMember {
     private Member member;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ProjectRole role;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private InvitationStatus status; // PENDING, ACCEPTED, DECLINED
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -46,8 +48,8 @@ public class ProjectMember {
         this.status = InvitationStatus.ACCEPTED;
     }
 
-    public void decline() {
-        this.status = InvitationStatus.DECLINED;
+    public void reject() {
+        this.status = InvitationStatus.REJECTED;
     }
 
     public boolean isAccepted() {
