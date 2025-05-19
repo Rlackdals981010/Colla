@@ -6,7 +6,9 @@ import com.dolloer.colla.domain.auth.repository.AuthRepository;
 import com.dolloer.colla.domain.mail.serivce.MailService;
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
 import com.dolloer.colla.domain.project.dto.response.MemberSearchResponse;
+import com.dolloer.colla.domain.project.dto.response.ProjectListResponse;
 import com.dolloer.colla.domain.project.dto.response.ProjectResponse;
+import com.dolloer.colla.domain.project.dto.response.ProjectSummaryResponse;
 import com.dolloer.colla.domain.project.entity.InvitationStatus;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
@@ -150,8 +152,26 @@ public class ProjectService {
         relation.reject();
     }
 
+    // 멤버가 속한 프로젝트를 전체 반환
+    public ProjectListResponse getProjectList(Member member) {
+        List<ProjectMember> projectMemberList= projectMemberRepository.findAllByMember(member);
+
+        List<ProjectSummaryResponse> summaryList = projectMemberList.stream()
+                .map(pm -> {
+                    Project project = pm.getProject();
+                    return new ProjectSummaryResponse(
+                            project.getId(),
+                            project.getName(),
+                            project.getDescription(),
+                            project.getStartDate(),
+                            project.getEndDate()
+                    );
+                })
+                .toList();
+
+        return new ProjectListResponse(summaryList);
 
 
-
+    }
 }
 

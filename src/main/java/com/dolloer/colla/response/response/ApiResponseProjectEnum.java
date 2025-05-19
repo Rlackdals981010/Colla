@@ -14,6 +14,7 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
     // 400
     MEMBER_ALREADY_EXIST(HttpStatus.BAD_REQUEST,"이미 회원가입된 회원 입니다."),
     MEMBER_NOT_EXIST(HttpStatus.BAD_REQUEST,"본 서비스 회원이 아닙니다."),
+    PROJECT_MEMBER_NOT_EXIST(HttpStatus.BAD_REQUEST,"속한 프로젝트가 없습니다."),
 
     //401
     MEMBER_WRONG_PASSWORD(HttpStatus.UNAUTHORIZED,"비밀번호가 틀렸습니다."),

@@ -3,6 +3,7 @@ package com.dolloer.colla.domain.project.controller;
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
 import com.dolloer.colla.domain.project.dto.request.InviteMembersRequest;
 import com.dolloer.colla.domain.project.dto.response.MemberSearchResponse;
+import com.dolloer.colla.domain.project.dto.response.ProjectListResponse;
 import com.dolloer.colla.domain.project.dto.response.ProjectResponse;
 import com.dolloer.colla.domain.project.service.ProjectService;
 import com.dolloer.colla.response.response.ApiResponse;
@@ -69,5 +70,12 @@ public class ProjectController {
 
         projectService.rejectInvitation(authUser.getMember(), projectId);
         return ResponseEntity.ok(ApiResponse.success("프로젝트 초대를 거절했습니다."));
+    }
+
+    // 내가 속한 프로젝트 전체 조회
+    @GetMapping("")
+    public  ResponseEntity<ApiResponse<ProjectListResponse>> getProjectList(@AuthenticationPrincipal AuthUser authUser){
+        ProjectListResponse result = projectService.getProjectList(authUser.getMember());
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseProjectEnum.PROJECT_LIST_GET_SUCCESS.getMessage()));
     }
 }
