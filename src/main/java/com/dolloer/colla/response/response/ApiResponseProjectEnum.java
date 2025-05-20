@@ -8,7 +8,10 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
     // 200
     PROJECT_CREATE_SUCCESS(HttpStatus.OK,"프로젝트 생성에 성공하였습니다."),
     PROJECT_LIST_GET_SUCCESS(HttpStatus.OK,"프로젝트 목록 조회에 성공하였습니다."),
+    PROJECT_GET_SUCCESS(HttpStatus.OK,"프로젝트 단건 조회에 성공하였습니다."),
     PROJECT_INVITE_SUCCESS(HttpStatus.OK,"프로젝트 초대에 성공하였습니다."),
+    PROJECT_LEAVE_SUCCESS(HttpStatus.OK,"프로젝트 탈퇴에 성공하였습니다."),
+    PROJECT_UPDATE_SUCCESS(HttpStatus.OK,"프로젝트 수정에 성공하였습니다."),
 
 
     // 400
@@ -21,10 +24,11 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
 
     // 403
     NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
-    NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"초대가능한 권한이 아닙니다."),
+    NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다."),
     NOT_MATCHING_USER(HttpStatus.FORBIDDEN,"해당 멤버가 아닙니다."),
     NOT_INVITED_MEMBER(HttpStatus.FORBIDDEN,"초대한 멤버가 아닙니다."),
     ALREADY_RESPONDED(HttpStatus.FORBIDDEN,"이미 응답한 상태입니다."),
+    OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN,"프로젝트 생성자는 탈퇴할 수 없습니다."),
 
     //404
     PROJECT_NOT_EXIST(HttpStatus.NOT_FOUND,"존재하지 않는 프로젝트 입니다.");

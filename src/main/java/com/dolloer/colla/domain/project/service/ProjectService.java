@@ -5,6 +5,7 @@ package com.dolloer.colla.domain.project.service;
 import com.dolloer.colla.domain.auth.repository.AuthRepository;
 import com.dolloer.colla.domain.mail.serivce.MailService;
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
+import com.dolloer.colla.domain.project.dto.request.UpdateProjectRequest;
 import com.dolloer.colla.domain.project.dto.response.MemberSearchResponse;
 import com.dolloer.colla.domain.project.dto.response.ProjectListResponse;
 import com.dolloer.colla.domain.project.dto.response.ProjectResponse;
@@ -171,6 +172,67 @@ public class ProjectService {
 
         return new ProjectListResponse(summaryList);
 
+
+    }
+
+    public ProjectSummaryResponse getProject(Member member, Long projectId) {
+        // 존재하는 프로젝트
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, member)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+
+        return new ProjectSummaryResponse(project.getId(),project.getName(),project.getDescription(),project.getStartDate(),project.getEndDate());
+    }
+
+    @Transactional
+    public void leaveProject(Member member, Long projectId) {
+        // 존재하는 프로젝트
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, member)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+
+        if(relation.getRole()==ProjectRole.OWNER){
+            throw new CustomException(ApiResponseProjectEnum.OWNER_CANNOT_LEAVE);
+        }
+
+        // 탈퇴
+        projectMemberRepository.delete(relation);
+    }
+
+    @Transactional
+    public ProjectSummaryResponse updateProject(Member member, Long projectId, UpdateProjectRequest updateProjectRequest) {
+
+        // 존재하는 프로젝트
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, member)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+
+        if (relation.getRole() != ProjectRole.OWNER && relation.getRole() != ProjectRole.ADMIN) {
+            throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        // null 아닌 값만 업데이트
+        if (updateProjectRequest.getName() != null) project.setName(updateProjectRequest.getName());
+        if (updateProjectRequest.getDescription() != null) project.setDescription(updateProjectRequest.getDescription());
+        if (updateProjectRequest.getStartDate() != null) project.setStartDate(updateProjectRequest.getStartDate());
+        if (updateProjectRequest.getEndDate() != null) project.setEndDate(updateProjectRequest.getEndDate());
+
+        return new ProjectSummaryResponse(
+                project.getId(),
+                project.getName(),
+                project.getDescription(),
+                project.getStartDate(),
+                project.getEndDate()
+        );
 
     }
 }

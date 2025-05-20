@@ -2,9 +2,11 @@ package com.dolloer.colla.domain.project.controller;
 
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
 import com.dolloer.colla.domain.project.dto.request.InviteMembersRequest;
+import com.dolloer.colla.domain.project.dto.request.UpdateProjectRequest;
 import com.dolloer.colla.domain.project.dto.response.MemberSearchResponse;
 import com.dolloer.colla.domain.project.dto.response.ProjectListResponse;
 import com.dolloer.colla.domain.project.dto.response.ProjectResponse;
+import com.dolloer.colla.domain.project.dto.response.ProjectSummaryResponse;
 import com.dolloer.colla.domain.project.service.ProjectService;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
@@ -13,6 +15,7 @@ import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.sql.Update;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -78,4 +81,36 @@ public class ProjectController {
         ProjectListResponse result = projectService.getProjectList(authUser.getMember());
         return ResponseEntity.ok(ApiResponse.success(result, ApiResponseProjectEnum.PROJECT_LIST_GET_SUCCESS.getMessage()));
     }
+
+    // 입장 하려는 프로젝트 세부 내용
+    @GetMapping("{projectId}")
+    public ResponseEntity<ApiResponse<ProjectSummaryResponse>> getProject(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId
+    ){
+        ProjectSummaryResponse result = projectService.getProject(authUser.getMember(), projectId);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseProjectEnum.PROJECT_GET_SUCCESS.getMessage()));
+    }
+
+    // 프로젝트 탈퇴
+    @DeleteMapping("{projectId}")
+    public ResponseEntity<ApiResponse<Void>> leaveProject(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId
+    ){
+        projectService.leaveProject(authUser.getMember(),projectId);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseProjectEnum.PROJECT_LEAVE_SUCCESS.getMessage()));
+    }
+
+    // 프로젝트 수정
+    @PutMapping("{projectId}")
+    public ResponseEntity<ApiResponse<ProjectSummaryResponse>> updateProject(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @RequestBody UpdateProjectRequest updateProjectRequest
+    ) {
+        ProjectSummaryResponse result =projectService.updateProject(authUser.getMember(),projectId, updateProjectRequest);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseProjectEnum.PROJECT_CREATE_SUCCESS.getMessage()));
+    }
 }
+
