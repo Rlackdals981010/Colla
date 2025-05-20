@@ -12,6 +12,7 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
     PROJECT_INVITE_SUCCESS(HttpStatus.OK,"프로젝트 초대에 성공하였습니다."),
     PROJECT_LEAVE_SUCCESS(HttpStatus.OK,"프로젝트 탈퇴에 성공하였습니다."),
     PROJECT_UPDATE_SUCCESS(HttpStatus.OK,"프로젝트 수정에 성공하였습니다."),
+    PROJECT_DELETE_SUCCESS(HttpStatus.OK,"프로젝트 삭제에 성공하였습니다."),
 
 
     // 400

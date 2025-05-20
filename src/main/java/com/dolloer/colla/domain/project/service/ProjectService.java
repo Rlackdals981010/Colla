@@ -235,5 +235,21 @@ public class ProjectService {
         );
 
     }
+
+    public void deleteProject(Member member, Long projectId) {
+        // 존재하는 프로젝트
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, member)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+
+        if (relation.getRole() != ProjectRole.OWNER) {
+            throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        projectRepository.delete(project);
+    }
 }
 

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,6 +32,9 @@ public class Project extends Timestamped {
     @Setter
     @Column(nullable = false)
     private LocalDate endDate;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProjectMember> members = new ArrayList<>();
 
     public Project (String name, String description, LocalDate startDate, LocalDate endDate){
         this.name = name;

@@ -93,7 +93,7 @@ public class ProjectController {
     }
 
     // 프로젝트 탈퇴
-    @DeleteMapping("{projectId}")
+    @DeleteMapping("{projectId}/leave")
     public ResponseEntity<ApiResponse<Void>> leaveProject(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId
@@ -111,6 +111,16 @@ public class ProjectController {
     ) {
         ProjectSummaryResponse result =projectService.updateProject(authUser.getMember(),projectId, updateProjectRequest);
         return ResponseEntity.ok(ApiResponse.success(result, ApiResponseProjectEnum.PROJECT_CREATE_SUCCESS.getMessage()));
+    }
+
+    // 프로젝트 삭제
+    @DeleteMapping("{projectId}")
+    public ResponseEntity<ApiResponse<Void>> deleteProject(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId
+    ){
+        projectService.deleteProject(authUser.getMember(),projectId);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseProjectEnum.PROJECT_LEAVE_SUCCESS.getMessage()));
     }
 }
 
