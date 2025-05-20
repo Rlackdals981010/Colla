@@ -236,6 +236,7 @@ public class ProjectService {
 
     }
 
+    @Transactional
     public void deleteProject(Member member, Long projectId) {
         // 존재하는 프로젝트
         Project project = projectRepository.findById(projectId)
