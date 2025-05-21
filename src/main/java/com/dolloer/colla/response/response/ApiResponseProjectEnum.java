@@ -13,6 +13,8 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
     PROJECT_LEAVE_SUCCESS(HttpStatus.OK,"프로젝트 탈퇴에 성공하였습니다."),
     PROJECT_UPDATE_SUCCESS(HttpStatus.OK,"프로젝트 수정에 성공하였습니다."),
     PROJECT_DELETE_SUCCESS(HttpStatus.OK,"프로젝트 삭제에 성공하였습니다."),
+    PROJECT_MEMBERS_GET_SUCCESS(HttpStatus.OK,"프로젝트 멤버 조회에 성공하였습니다."),
+    PROJECT_MEMBERS_DELETE_SUCCESS(HttpStatus.OK,"프로젝트 멤버 강퇴에 성공하였습니다."),
 
 
     // 400
@@ -27,6 +29,8 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
     NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
     NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다."),
     NOT_MATCHING_USER(HttpStatus.FORBIDDEN,"해당 멤버가 아닙니다."),
+    CANNOT_REMOVE_SELF(HttpStatus.FORBIDDEN,"스스로는 강퇴가 불가능 합니다."),
+    CANNOT_REMOVE_OWNER(HttpStatus.FORBIDDEN,"OWNER는 강퇴가 불가능 합니다."),
     NOT_INVITED_MEMBER(HttpStatus.FORBIDDEN,"초대한 멤버가 아닙니다."),
     ALREADY_RESPONDED(HttpStatus.FORBIDDEN,"이미 응답한 상태입니다."),
     OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN,"프로젝트 생성자는 탈퇴할 수 없습니다."),

@@ -3,10 +3,7 @@ package com.dolloer.colla.domain.project.controller;
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
 import com.dolloer.colla.domain.project.dto.request.InviteMembersRequest;
 import com.dolloer.colla.domain.project.dto.request.UpdateProjectRequest;
-import com.dolloer.colla.domain.project.dto.response.MemberSearchResponse;
-import com.dolloer.colla.domain.project.dto.response.ProjectListResponse;
-import com.dolloer.colla.domain.project.dto.response.ProjectResponse;
-import com.dolloer.colla.domain.project.dto.response.ProjectSummaryResponse;
+import com.dolloer.colla.domain.project.dto.response.*;
 import com.dolloer.colla.domain.project.service.ProjectService;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
@@ -122,5 +119,27 @@ public class ProjectController {
         projectService.deleteProject(authUser.getMember(),projectId);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseProjectEnum.PROJECT_LEAVE_SUCCESS.getMessage()));
     }
+
+    // 해당 프로젝트 멤버 전체 조회
+    @GetMapping("/{projectId}/members")
+    public ResponseEntity<ApiResponse<MemberListResponse>> getProjectMembers(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId
+    ){
+        MemberListResponse result =  projectService.getProjectMembers(authUser.getMember(),projectId);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseProjectEnum.PROJECT_MEMBERS_GET_SUCCESS.getMessage()));
+    }
+
+    // 팀원 강퇴
+    @DeleteMapping("/{projectId}/members/{memberId}")
+    public ResponseEntity<ApiResponse<Void>> deleteProjectMember(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long memberId
+    ){
+        projectService.deleteProjectMember(authUser.getMember(),projectId,memberId);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseProjectEnum.PROJECT_MEMBERS_DELETE_SUCCESS.getMessage()));
+    }
+
 }
 

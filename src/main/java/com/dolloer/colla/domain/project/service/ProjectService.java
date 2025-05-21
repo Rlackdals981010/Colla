@@ -6,10 +6,7 @@ import com.dolloer.colla.domain.auth.repository.AuthRepository;
 import com.dolloer.colla.domain.mail.serivce.MailService;
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
 import com.dolloer.colla.domain.project.dto.request.UpdateProjectRequest;
-import com.dolloer.colla.domain.project.dto.response.MemberSearchResponse;
-import com.dolloer.colla.domain.project.dto.response.ProjectListResponse;
-import com.dolloer.colla.domain.project.dto.response.ProjectResponse;
-import com.dolloer.colla.domain.project.dto.response.ProjectSummaryResponse;
+import com.dolloer.colla.domain.project.dto.response.*;
 import com.dolloer.colla.domain.project.entity.InvitationStatus;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
@@ -18,6 +15,7 @@ import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.response.exception.CustomException;
+import com.dolloer.colla.response.response.ApiResponseAuthEnum;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
@@ -71,11 +69,11 @@ public class ProjectService {
 
     // 이메일 기반 회원 검색
     public MemberSearchResponse searchMemberByEmailForInvite(Member requester, Long projectId, String email) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+        // 존재하는 프로젝트
+        Project project = checkProject(projectId);
 
-        ProjectMember requesterRelation = projectMemberRepository.findByProjectAndMember(project, requester)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember requesterRelation = checkRelation(project, requester);
 
         if (requesterRelation.getRole() != ProjectRole.OWNER && requesterRelation.getRole() != ProjectRole.ADMIN) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
@@ -90,11 +88,11 @@ public class ProjectService {
     // 초대 메일 전송
     @Transactional
     public void inviteMembers(Member inviter, Long projectId, List<Long> memberIds) throws MessagingException {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+        // 존재하는 프로젝트
+        Project project = checkProject(projectId);
 
-        ProjectMember inviterRelation = projectMemberRepository.findByProjectAndMember(project, inviter)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember inviterRelation = checkRelation(project, inviter);
 
         if (!hasInvitePermission(inviterRelation)) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
@@ -125,11 +123,11 @@ public class ProjectService {
 
     @Transactional
     public void acceptInvitation(Member requester, Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+        // 존재하는 프로젝트
+        Project project = checkProject(projectId);
 
-        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, requester)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_INVITED_MEMBER));
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember relation = checkRelation(project, requester);
 
         if (relation.getStatus() != InvitationStatus.PENDING) {
             throw new CustomException(ApiResponseProjectEnum.ALREADY_RESPONDED);
@@ -140,11 +138,11 @@ public class ProjectService {
 
     @Transactional
     public void rejectInvitation(Member requester, Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+        // 존재하는 프로젝트
+        Project project = checkProject(projectId);
 
-        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, requester)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_INVITED_MEMBER));
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember relation = checkRelation(project, requester);
 
         if (relation.getStatus() != InvitationStatus.PENDING) {
             throw new CustomException(ApiResponseProjectEnum.ALREADY_RESPONDED);
@@ -172,17 +170,14 @@ public class ProjectService {
 
         return new ProjectListResponse(summaryList);
 
-
     }
 
     public ProjectSummaryResponse getProject(Member member, Long projectId) {
         // 존재하는 프로젝트
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+        Project project = checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+        ProjectMember relation = checkRelation(project, member);
 
         return new ProjectSummaryResponse(project.getId(),project.getName(),project.getDescription(),project.getStartDate(),project.getEndDate());
     }
@@ -190,12 +185,10 @@ public class ProjectService {
     @Transactional
     public void leaveProject(Member member, Long projectId) {
         // 존재하는 프로젝트
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+        Project project = checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+        ProjectMember relation = checkRelation(project, member);
 
         if(relation.getRole()==ProjectRole.OWNER){
             throw new CustomException(ApiResponseProjectEnum.OWNER_CANNOT_LEAVE);
@@ -209,12 +202,10 @@ public class ProjectService {
     public ProjectSummaryResponse updateProject(Member member, Long projectId, UpdateProjectRequest updateProjectRequest) {
 
         // 존재하는 프로젝트
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+        Project project = checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+        ProjectMember relation = checkRelation(project, member);
 
         if (relation.getRole() != ProjectRole.OWNER && relation.getRole() != ProjectRole.ADMIN) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
@@ -239,18 +230,91 @@ public class ProjectService {
     @Transactional
     public void deleteProject(Member member, Long projectId) {
         // 존재하는 프로젝트
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+        Project project = checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+        ProjectMember relation = checkRelation(project, member);
 
         if (relation.getRole() != ProjectRole.OWNER) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
         }
 
         projectRepository.delete(project);
+    }
+
+    public MemberListResponse getProjectMembers(Member member, Long projectId) {
+        // 존재하는 프로젝트
+        Project project = checkProject(projectId);
+
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember relation = checkRelation(project, member);
+
+        // 해당 프로젝트와 관계있는 멤버들
+        List<ProjectMember> projectMember = projectMemberRepository.findAllByProject(project);
+
+        List<ProjectMembersResponse> memberSearchResponses = projectMember.stream()
+                .filter(pm->pm.getStatus()!=InvitationStatus.REJECTED)
+                .map( pm->{
+                    Member pmMember = pm.getMember();
+                    return new ProjectMembersResponse(
+                            pmMember.getId(),
+                            pmMember.getUsername(),
+                            pmMember.getEmail(),
+                            pm.getRole()
+                    );
+                })
+                .toList();
+
+        return new MemberListResponse(memberSearchResponses);
+    }
+
+    // 멤버 강퇴 및 초대 취소
+    @Transactional
+    public void deleteProjectMember(Member member, Long projectId, Long memberId) {
+        // 존재하는 프로젝트
+        Project project = checkProject(projectId);
+
+        // 해당 프로젝트에 소속되어있는지
+        ProjectMember relation = checkRelation(project, member);
+
+        // 멤버 권한 체크, 일반 사용자는 강퇴 불가
+        if(relation.getRole()==ProjectRole.MEMBER){
+            throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        // 삭제 대상 멤버 확인
+        Member deleteMember = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ApiResponseAuthEnum.MEMBER_NOT_EXIST));
+
+        // 삭제 대상 멤버의 프로젝트 소속 확인
+        ProjectMember target = projectMemberRepository.findByProjectAndMember(project, deleteMember)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+
+        // 자기 자신 강퇴 방지
+        if (member.getId().equals(deleteMember.getId())) {
+            throw new CustomException(ApiResponseProjectEnum.CANNOT_REMOVE_SELF);
+        }
+
+        // OWNER 강퇴 방지
+        if (target.getRole() == ProjectRole.OWNER) {
+            throw new CustomException(ApiResponseProjectEnum.CANNOT_REMOVE_OWNER);
+        }
+
+        // 삭제
+        projectMemberRepository.delete(target);
+    }
+
+
+    // 프로젝트 존재 확인
+    private Project checkProject(Long projectId){
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
+    }
+
+    // 유저가 프로젝트에 속한지 확인
+    private ProjectMember checkRelation(Project project,Member member ){
+        return projectMemberRepository.findByProjectAndMember(project, member)
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
     }
 }
 
