@@ -141,5 +141,16 @@ public class ProjectController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseProjectEnum.PROJECT_MEMBERS_DELETE_SUCCESS.getMessage()));
     }
 
+    // 초대 받은 프로젝트 목록
+    @GetMapping("invited")
+    public ResponseEntity<ApiResponse<ProjectInvitedListResponse>> getInvitedProject(
+            @AuthenticationPrincipal AuthUser authUser
+    ){
+        ProjectInvitedListResponse result = projectService.getInvitedProject(authUser.getMember());
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseProjectEnum.PROJECT_MEMBERS_GET_SUCCESS.getMessage()));
+
+
+    }
+
 }
 

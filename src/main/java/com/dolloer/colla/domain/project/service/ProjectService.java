@@ -305,6 +305,27 @@ public class ProjectService {
     }
 
 
+    // 초대 받은 프로젝트 조회
+    public ProjectInvitedListResponse getInvitedProject(Member member) {
+        List<ProjectMember> projectMemberList = projectMemberRepository.findAllByMember(member);
+
+        List<ProjectSummaryResponse> projectInvitedListResponseList = projectMemberList.stream()
+                .filter(pm->pm.getStatus()==InvitationStatus.PENDING)
+                .map( pm->{
+                    Project project = pm.getProject();
+                    return new ProjectSummaryResponse(
+                            project.getId(),
+                            project.getName(),
+                            project.getDescription(),
+                            project.getStartDate(),
+                            project.getEndDate()
+                    );
+                })
+                .toList();
+
+        return new ProjectInvitedListResponse(projectInvitedListResponseList);
+    }
+
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
