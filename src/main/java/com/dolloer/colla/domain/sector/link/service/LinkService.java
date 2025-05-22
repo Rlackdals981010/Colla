@@ -6,6 +6,8 @@ import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.link.dto.request.LinkCreateRequest;
+import com.dolloer.colla.domain.sector.link.dto.response.LinkListResponse;
+import com.dolloer.colla.domain.sector.link.dto.response.LinkResponse;
 import com.dolloer.colla.domain.sector.link.entity.Link;
 import com.dolloer.colla.domain.sector.link.repository.LinkRepository;
 import com.dolloer.colla.response.exception.CustomException;
@@ -14,6 +16,8 @@ import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +44,26 @@ public class LinkService {
 
     }
 
+
+    public LinkListResponse getLinkList(Member member, Long projectId) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+
+        List<Link> links = linkRepository.findAllByProject(project); // ← 이거 네가 구현한 메서드여야 해
+
+        List<LinkResponse> linkList = links.stream()
+                .map(link -> new LinkResponse(
+                        link.getId(),
+                        link.getLinkTitle(),
+                        link.getDescription(),
+                        link.getUrl(),
+                        link.getUploader().getUsername(),
+                        link.getCreatedAt().toLocalDate()
+                ))
+                .toList();
+
+        return new LinkListResponse(linkList);
+    }
 
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){

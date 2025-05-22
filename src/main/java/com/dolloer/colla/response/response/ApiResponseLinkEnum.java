@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum ApiResponseLinkEnum implements ApiResponseEnum {
     // 200
     LINK_CREATE_SUCCESS(HttpStatus.OK,"링크 생성에 성공하였습니다."),
+    LINK_LIST_READ_SUCCESS(HttpStatus.OK,"링크전체 조회에 성공하였습니다."),
 
 
     // 400
