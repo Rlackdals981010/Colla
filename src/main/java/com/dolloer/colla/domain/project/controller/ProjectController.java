@@ -1,5 +1,6 @@
 package com.dolloer.colla.domain.project.controller;
 
+import com.dolloer.colla.domain.project.dto.request.ChangeRoleRequest;
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
 import com.dolloer.colla.domain.project.dto.request.InviteMembersRequest;
 import com.dolloer.colla.domain.project.dto.request.UpdateProjectRequest;
@@ -148,9 +149,21 @@ public class ProjectController {
     ){
         ProjectInvitedListResponse result = projectService.getInvitedProject(authUser.getMember());
         return ResponseEntity.ok(ApiResponse.success(result, ApiResponseProjectEnum.PROJECT_MEMBERS_GET_SUCCESS.getMessage()));
-
-
     }
+
+    // 멤버 역할 변경
+    @PatchMapping("/{projectId}/members/{memberId}/role")
+    public ResponseEntity<ApiResponse<Void>> changeRole(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long memberId,
+            @RequestBody ChangeRoleRequest changeRoleRequest
+    ) {
+        projectService.changeRole(authUser.getMember(), projectId, memberId,changeRoleRequest);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseProjectEnum.PROJECT_MEMBER_ROLE_CHANGE_SUCCESS.getMessage()));
+    }
+
+
 
 }
 

@@ -16,6 +16,7 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
     PROJECT_MEMBERS_GET_SUCCESS(HttpStatus.OK,"프로젝트 멤버 조회에 성공하였습니다."),
     PROJECT_MEMBERS_DELETE_SUCCESS(HttpStatus.OK,"프로젝트 멤버 강퇴에 성공하였습니다."),
     PROJECT_INVITED_GET_SUCCESS(HttpStatus.OK,"초대받은 프로젝트 조회에 성공하였습니다."),
+    PROJECT_MEMBER_ROLE_CHANGE_SUCCESS(HttpStatus.OK,"권한 변경에 성공하였습니다."),
 
 
     // 400
@@ -35,6 +36,9 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
     NOT_INVITED_MEMBER(HttpStatus.FORBIDDEN,"초대한 멤버가 아닙니다."),
     ALREADY_RESPONDED(HttpStatus.FORBIDDEN,"이미 응답한 상태입니다."),
     OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN,"프로젝트 생성자는 탈퇴할 수 없습니다."),
+    CANNOT_CHANGE_OWN_ROLE(HttpStatus.FORBIDDEN,"본인의 권한은 변경할 수 없습니다."),
+    ROLE_ALREADY_ASSIGNED(HttpStatus.FORBIDDEN,"동일한 권한입니다."),
+    CANNOT_DOWNGRADE_OWNER(HttpStatus.FORBIDDEN,"소유자의 권한을 내릴 수 없습니다."),
 
     //404
     PROJECT_NOT_EXIST(HttpStatus.NOT_FOUND,"존재하지 않는 프로젝트 입니다.");

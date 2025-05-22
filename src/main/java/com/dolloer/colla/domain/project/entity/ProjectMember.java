@@ -52,7 +52,7 @@ public class ProjectMember {
         this.status = InvitationStatus.REJECTED;
     }
 
-    public boolean isAccepted() {
-        return this.status == InvitationStatus.ACCEPTED;
-    }
+    public void changeRole(ProjectRole role) {this.role = role;}
+
+
 }

@@ -4,6 +4,7 @@ package com.dolloer.colla.domain.project.service;
 
 import com.dolloer.colla.domain.auth.repository.AuthRepository;
 import com.dolloer.colla.domain.mail.serivce.MailService;
+import com.dolloer.colla.domain.project.dto.request.ChangeRoleRequest;
 import com.dolloer.colla.domain.project.dto.request.CreateProjectRequest;
 import com.dolloer.colla.domain.project.dto.request.UpdateProjectRequest;
 import com.dolloer.colla.domain.project.dto.response.*;
@@ -75,7 +76,7 @@ public class ProjectService {
         // 해당 프로젝트에 소속되어있는지
         ProjectMember requesterRelation = checkRelation(project, requester);
 
-        if (requesterRelation.getRole() != ProjectRole.OWNER && requesterRelation.getRole() != ProjectRole.ADMIN) {
+        if (requesterRelation.getRole() != ProjectRole.OWNER && requesterRelation.getRole() != ProjectRole.OWNER) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
         }
 
@@ -118,7 +119,7 @@ public class ProjectService {
     }
 
     private boolean hasInvitePermission(ProjectMember relation) {
-        return relation.getRole() == ProjectRole.OWNER || relation.getRole() == ProjectRole.ADMIN;
+        return relation.getRole() == ProjectRole.OWNER || relation.getRole() == ProjectRole.OWNER;
     }
 
     @Transactional
@@ -207,7 +208,7 @@ public class ProjectService {
         // 해당 프로젝트에 소속되어있는지
         ProjectMember relation = checkRelation(project, member);
 
-        if (relation.getRole() != ProjectRole.OWNER && relation.getRole() != ProjectRole.ADMIN) {
+        if (relation.getRole() != ProjectRole.OWNER && relation.getRole() != ProjectRole.OWNER) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
         }
 
@@ -324,6 +325,46 @@ public class ProjectService {
                 .toList();
 
         return new ProjectInvitedListResponse(projectInvitedListResponseList);
+    }
+
+    // 멤버 권한 변경
+    @Transactional
+    public void changeRole(Member member, Long projectId, Long memberId, ChangeRoleRequest changeRoleRequest) {
+        Project project = checkProject(projectId);
+        ProjectMember relation = checkRelation(project, member);
+
+        if (memberId.equals(member.getId())) {
+            throw new CustomException(ApiResponseProjectEnum.CANNOT_CHANGE_OWN_ROLE);
+        }
+
+        ProjectRole newRole = changeRoleRequest.getRole();
+
+        // 멤버는 권한 변경 불가
+        if (relation.getRole() == ProjectRole.MEMBER) {
+            throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        Member target = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ApiResponseAuthEnum.MEMBER_NOT_EXIST));
+
+        ProjectMember targetRelation = checkRelation(project, target);
+
+        // 로그인 한 사람이 변경할 역할보다 권한이 낮으면 불가능
+        if (!relation.getRole().hasHigherPermissionThan(targetRelation.getRole())) {
+            throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        // 이미 해당 권한이면
+        if (targetRelation.getRole() == newRole) {
+            throw new CustomException(ApiResponseProjectEnum.ROLE_ALREADY_ASSIGNED);
+        }
+
+        // OWNER의 권한을 박탈할 수 없음
+        if (targetRelation.getRole() == ProjectRole.OWNER && newRole != ProjectRole.OWNER) {
+            throw new CustomException(ApiResponseProjectEnum.CANNOT_DOWNGRADE_OWNER);
+        }
+
+        targetRelation.changeRole(newRole);
     }
 
     // 프로젝트 존재 확인
