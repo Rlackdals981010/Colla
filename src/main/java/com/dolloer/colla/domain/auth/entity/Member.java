@@ -1,6 +1,6 @@
 package com.dolloer.colla.domain.auth.entity;
 
-import com.dolloer.colla.security.AuthUser;
+
 import jakarta.persistence.*;
 
 

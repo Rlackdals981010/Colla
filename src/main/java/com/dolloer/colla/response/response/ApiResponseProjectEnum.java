@@ -29,6 +29,7 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
 
     // 403
     NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
+    NOT_THIS_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"해당 프로젝트의 맴버가 아닙니다."),
     NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다."),
     NOT_MATCHING_USER(HttpStatus.FORBIDDEN,"해당 멤버가 아닙니다."),
     CANNOT_REMOVE_SELF(HttpStatus.FORBIDDEN,"스스로는 강퇴가 불가능 합니다."),

@@ -376,7 +376,7 @@ public class ProjectService {
     // 유저가 프로젝트에 속한지 확인
     private ProjectMember checkRelation(Project project,Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_PROJECT_MEMBER));
+                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
     }
 }
 
