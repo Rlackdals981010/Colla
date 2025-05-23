@@ -40,4 +40,13 @@ public class Link extends Timestamped {
         this.uploader = uploader;
     }
 
+    public void updateTitle(String linkTitle){
+        this.linkTitle = linkTitle;
+    }
+    public void updateUrl(String url){
+        this.url = url;
+    }
+    public void updateDescription(String description){
+        this.description = description;
+    }
 }

@@ -14,4 +14,5 @@ public class LinkResponse {
     private String url;
     private String Uploader;
     private LocalDate createAt;
+    private LocalDate updateAt;
 }

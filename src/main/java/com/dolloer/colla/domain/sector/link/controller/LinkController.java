@@ -1,15 +1,13 @@
 package com.dolloer.colla.domain.sector.link.controller;
 
-import com.dolloer.colla.domain.auth.dto.request.SignupRequest;
-import com.dolloer.colla.domain.auth.dto.response.SignupResponse;
 import com.dolloer.colla.domain.sector.link.dto.request.LinkCreateRequest;
+import com.dolloer.colla.domain.sector.link.dto.request.LinkUpdateRequest;
 import com.dolloer.colla.domain.sector.link.dto.response.LinkListResponse;
+import com.dolloer.colla.domain.sector.link.dto.response.LinkResponse;
 import com.dolloer.colla.domain.sector.link.service.LinkService;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseLinkEnum;
-import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import com.dolloer.colla.security.AuthUser;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,5 +41,26 @@ public class LinkController {
         return ResponseEntity.ok(ApiResponse.success(result, ApiResponseLinkEnum.LINK_LIST_READ_SUCCESS.getMessage()));
     }
 
+    // 링크 글 상세 보기
+    @GetMapping("/{linkId}")
+    public ResponseEntity<ApiResponse<LinkResponse>> getLink(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long linkId
+    ){
+        LinkResponse result = linkService.getLink(authUser.getMember(),projectId, linkId);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseLinkEnum.LINK_READ_SUCCESS.getMessage()));
+    }
+
+    // 링크 글 수정하기
+    @PatchMapping("/{linkId}")
+    public ResponseEntity<ApiResponse<LinkResponse>> updateLink(@AuthenticationPrincipal AuthUser authUser,
+                                                                @PathVariable Long projectId,
+                                                                @PathVariable Long linkId,
+                                                                @RequestBody LinkUpdateRequest linkUpdateRequest
+                                                                ){
+        LinkResponse result = linkService.updateLink(authUser.getMember(),projectId, linkId,linkUpdateRequest);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseLinkEnum.LINK_UPDATE_SUCCESS.getMessage()));
+    }
 
 }

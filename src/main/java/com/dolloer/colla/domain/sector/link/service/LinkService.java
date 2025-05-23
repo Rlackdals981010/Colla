@@ -6,6 +6,7 @@ import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.link.dto.request.LinkCreateRequest;
+import com.dolloer.colla.domain.sector.link.dto.request.LinkUpdateRequest;
 import com.dolloer.colla.domain.sector.link.dto.response.LinkListResponse;
 import com.dolloer.colla.domain.sector.link.dto.response.LinkResponse;
 import com.dolloer.colla.domain.sector.link.entity.Link;
@@ -58,11 +59,55 @@ public class LinkService {
                         link.getDescription(),
                         link.getUrl(),
                         link.getUploader().getUsername(),
-                        link.getCreatedAt().toLocalDate()
+                        link.getCreatedAt().toLocalDate(),
+                        link.getUpdatedAt().toLocalDate()
                 ))
                 .toList();
 
         return new LinkListResponse(linkList);
+    }
+
+    public LinkResponse getLink(Member member, Long projectId, Long linkId) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+        Link link = checkLink(linkId);
+
+        return new LinkResponse(
+                link.getId(),
+                link.getLinkTitle(),
+                link.getDescription(),
+                link.getUrl(),
+                link.getUploader().getUsername(),
+                link.getCreatedAt().toLocalDate(),
+                link.getUpdatedAt().toLocalDate()
+        );
+    }
+
+    // 링크 수정하기
+    @Transactional
+    public LinkResponse updateLink(Member member, Long projectId, Long linkId, LinkUpdateRequest linkUpdateRequest) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+        Link link = checkLink(linkId);
+
+        // 작성자만 수정 가능
+        if (!link.getUploader().getId().equals(member.getId())) {
+            throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        if(linkUpdateRequest.getDescription() != null){link.updateDescription(linkUpdateRequest.getDescription());}
+        if(linkUpdateRequest.getUrl()!= null){link.updateUrl(linkUpdateRequest.getUrl());}
+        if(linkUpdateRequest.getTitle() != null){link.updateTitle(linkUpdateRequest.getTitle());}
+
+        return new LinkResponse(
+                link.getId(),
+                link.getLinkTitle(),
+                link.getDescription(),
+                link.getUrl(),
+                link.getUploader().getUsername(),
+                link.getCreatedAt().toLocalDate(),
+                link.getUpdatedAt().toLocalDate()
+        );
     }
 
     // 프로젝트 존재 확인
@@ -70,6 +115,13 @@ public class LinkService {
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
+    // 링크 존재 확인
+    private Link checkLink(Long linkId){
+        return linkRepository.findById(linkId)
+                .orElseThrow(() -> new CustomException(ApiResponseLinkEnum.LINK_NOT_EXIST));
+
+    }
+
     // 유저가 프로젝트에 속한지 확인
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
