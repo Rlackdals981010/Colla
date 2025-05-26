@@ -63,4 +63,15 @@ public class LinkController {
         return ResponseEntity.ok(ApiResponse.success(result, ApiResponseLinkEnum.LINK_UPDATE_SUCCESS.getMessage()));
     }
 
+    // 링크 글 삭제하기
+    @DeleteMapping("/{linkId}")
+    public ResponseEntity<ApiResponse<Void>> deleteLink(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long linkId
+    ){
+        linkService.deleteLink(authUser.getMember(),projectId,linkId);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseLinkEnum.LINK_DELETE_SUCCESS.getMessage()));
+    }
+
 }

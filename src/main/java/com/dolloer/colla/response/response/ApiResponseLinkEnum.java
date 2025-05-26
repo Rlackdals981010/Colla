@@ -10,6 +10,7 @@ public enum ApiResponseLinkEnum implements ApiResponseEnum {
     LINK_LIST_READ_SUCCESS(HttpStatus.OK,"링크전체 조회에 성공하였습니다."),
     LINK_READ_SUCCESS(HttpStatus.OK,"단일 링크 조회에 성공하였습니다."),
     LINK_UPDATE_SUCCESS(HttpStatus.OK,"링크 수정에 성공하였습니다."),
+    LINK_DELETE_SUCCESS(HttpStatus.OK,"링크 삭제에 성공하였습니다."),
     // 400
     DUPLICATED_LINK(HttpStatus.BAD_REQUEST,"동일한 링크가 존재합니다."),
 
@@ -18,7 +19,7 @@ public enum ApiResponseLinkEnum implements ApiResponseEnum {
 
     // 403
     NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
-
+    NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다."),
 
     //404
     LINK_NOT_EXIST(HttpStatus.NOT_FOUND,"존재하지 않는 링크 글 입니다.");
