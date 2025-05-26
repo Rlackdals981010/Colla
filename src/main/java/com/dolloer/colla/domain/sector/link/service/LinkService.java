@@ -157,14 +157,13 @@ public class LinkService {
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
     // 링크 존재 확인
-
     private Link checkLink(Long linkId){
         return linkRepository.findById(linkId)
                 .orElseThrow(() -> new CustomException(ApiResponseLinkEnum.LINK_NOT_EXIST));
 
     }
-    // 유저가 프로젝트에 속한지 확인
 
+    // 유저가 프로젝트에 속한지 확인
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
