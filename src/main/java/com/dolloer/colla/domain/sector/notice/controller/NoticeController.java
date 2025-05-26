@@ -2,8 +2,10 @@ package com.dolloer.colla.domain.sector.notice.controller;
 
 
 import com.dolloer.colla.domain.sector.notice.dto.request.NoticeCreateRequest;
+import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
 import com.dolloer.colla.domain.sector.notice.service.NoticeService;
 import com.dolloer.colla.response.response.ApiResponse;
+import com.dolloer.colla.response.response.ApiResponseLinkEnum;
 import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
 import com.dolloer.colla.security.AuthUser;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,15 @@ public class NoticeController {
     private final NoticeService noticeService;
 
     // 공지 목록 조회
+    @GetMapping()
+    public ResponseEntity<ApiResponse<NoticeListResponse>> getNoticeList(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId
+    ){
+        NoticeListResponse result = noticeService.getNoticeList(authUser.getMember(),projectId);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseNoticeEnum.NOTICE_LIST_READ_SUCCESS.getMessage()));
+    }
+
     // 공지 이름 기반 검색
     // 공지 단건 조회
 

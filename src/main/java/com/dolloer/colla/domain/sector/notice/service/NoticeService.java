@@ -6,7 +6,10 @@ import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
+import com.dolloer.colla.domain.sector.link.entity.Link;
 import com.dolloer.colla.domain.sector.notice.dto.request.NoticeCreateRequest;
+import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
+import com.dolloer.colla.domain.sector.notice.dto.response.NoticeResponse;
 import com.dolloer.colla.domain.sector.notice.entity.Notice;
 import com.dolloer.colla.domain.sector.notice.repository.NoticeRepository;
 import com.dolloer.colla.response.exception.CustomException;
@@ -16,6 +19,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class NoticeService {
@@ -24,6 +29,7 @@ public class NoticeService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
 
+    // 생성
     @Transactional
     public void createNotice(Member member, Long projectId, NoticeCreateRequest request) {
         Project project = checkProject(projectId);
@@ -44,12 +50,33 @@ public class NoticeService {
         noticeRepository.save(notice);
     }
 
+    // 전체 조회
+    public NoticeListResponse getNoticeList(Member member, Long projectId) {
+        Project project = checkProject(projectId);
+        ProjectMember relation = checkRelation(project, member);
+
+        List<Notice> notices = noticeRepository.findAllByProject(project);
+
+        List<NoticeResponse> noticeList = notices.stream()
+                .map(notice -> new NoticeResponse(
+                                notice.getId(),
+                                notice.getTitle(),
+                                notice.getDescription(),
+                                notice.getUploader().getUsername(),
+                                notice.getCreatedAt().toLocalDate(),
+                                notice.getUpdatedAt().toLocalDate()
+                        )
+                ).toList();
+        return new NoticeListResponse(noticeList);
+    }
+
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
     // 유저가 프로젝트에 속한지 확인
+
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));

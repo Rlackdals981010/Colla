@@ -51,7 +51,7 @@ public class LinkService {
         Project project = checkProject(projectId);
         checkRelation(project, member);
 
-        List<Link> links = linkRepository.findAllByProject(project); // ← 이거 네가 구현한 메서드여야 해
+        List<Link> links = linkRepository.findAllByProject(project);
 
         List<LinkResponse> linkList = links.stream()
                 .map(link -> new LinkResponse(
