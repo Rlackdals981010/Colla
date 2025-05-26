@@ -6,7 +6,6 @@ import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
-import com.dolloer.colla.domain.sector.link.entity.Link;
 import com.dolloer.colla.domain.sector.notice.dto.request.NoticeCreateRequest;
 import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
 import com.dolloer.colla.domain.sector.notice.dto.response.NoticeResponse;
@@ -56,6 +55,26 @@ public class NoticeService {
         ProjectMember relation = checkRelation(project, member);
 
         List<Notice> notices = noticeRepository.findAllByProject(project);
+
+        List<NoticeResponse> noticeList = notices.stream()
+                .map(notice -> new NoticeResponse(
+                                notice.getId(),
+                                notice.getTitle(),
+                                notice.getDescription(),
+                                notice.getUploader().getUsername(),
+                                notice.getCreatedAt().toLocalDate(),
+                                notice.getUpdatedAt().toLocalDate()
+                        )
+                ).toList();
+        return new NoticeListResponse(noticeList);
+    }
+
+    // 검색 조회
+    public NoticeListResponse searchNoticesByTitle(Member member, Long projectId, String keyword) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        List<Notice> notices = noticeRepository.searchByTitle(project, keyword);
 
         List<NoticeResponse> noticeList = notices.stream()
                 .map(notice -> new NoticeResponse(

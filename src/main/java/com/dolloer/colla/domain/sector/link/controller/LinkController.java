@@ -82,7 +82,7 @@ public class LinkController {
             @RequestParam String keyword // ex: ?keyword=검색어
     ) {
         LinkListResponse result = linkService.searchLinksByTitle(authUser.getMember(), projectId, keyword);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseLinkEnum.LINK_LIST_SEARCH_SUCCESS.getMessage()));
     }
 
 }

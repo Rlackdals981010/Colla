@@ -11,6 +11,7 @@ public enum ApiResponseNoticeEnum implements ApiResponseEnum {
     NOTICE_READ_SUCCESS(HttpStatus.OK,"단일 공지 조회에 성공하였습니다."),
     NOTICE_UPDATE_SUCCESS(HttpStatus.OK,"공지 수정에 성공하였습니다."),
     NOTICE_DELETE_SUCCESS(HttpStatus.OK,"공지 삭제에 성공하였습니다."),
+    NOTICE_LIST_SEARCH_SUCCESS(HttpStatus.OK,"공지 검색에 성공하였습니다."),
     // 400
     DUPLICATED_NOTICE(HttpStatus.BAD_REQUEST,"동일한 공지명이 존재합니다."),
 

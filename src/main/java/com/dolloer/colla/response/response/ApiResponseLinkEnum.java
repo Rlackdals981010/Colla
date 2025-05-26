@@ -11,6 +11,7 @@ public enum ApiResponseLinkEnum implements ApiResponseEnum {
     LINK_READ_SUCCESS(HttpStatus.OK,"단일 링크 조회에 성공하였습니다."),
     LINK_UPDATE_SUCCESS(HttpStatus.OK,"링크 수정에 성공하였습니다."),
     LINK_DELETE_SUCCESS(HttpStatus.OK,"링크 삭제에 성공하였습니다."),
+    LINK_LIST_SEARCH_SUCCESS(HttpStatus.OK,"링크 검색에 성공하였습니다."),
     // 400
     DUPLICATED_LINK(HttpStatus.BAD_REQUEST,"동일한 링크가 존재합니다."),
 

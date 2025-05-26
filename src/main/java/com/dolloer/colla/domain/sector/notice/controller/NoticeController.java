@@ -31,6 +31,16 @@ public class NoticeController {
     }
 
     // 공지 이름 기반 검색
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<NoticeListResponse>> searchNoticesByTitle(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @RequestParam String keyword
+    ){
+        NoticeListResponse result = noticeService.searchNoticesByTitle(authUser.getMember(),projectId,keyword);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseNoticeEnum.NOTICE_LIST_SEARCH_SUCCESS.getMessage()));
+
+    }
     // 공지 단건 조회
 
     // 공지 생성
