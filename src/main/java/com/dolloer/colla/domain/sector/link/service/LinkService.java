@@ -33,7 +33,7 @@ public class LinkService {
     @Transactional
     public void createLink(Member member, Long projectId, LinkCreateRequest linkCreateRequest) {
         Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        checkRelation(project, member);
 
         // 동일한 링크가 존재하는지 체크
         boolean exists = linkRepository.existsByProjectAndUrl(project, linkCreateRequest.getUrl());
@@ -49,7 +49,7 @@ public class LinkService {
 
     public LinkListResponse getLinkList(Member member, Long projectId) {
         Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        checkRelation(project, member);
 
         List<Link> links = linkRepository.findAllByProject(project); // ← 이거 네가 구현한 메서드여야 해
 
@@ -70,7 +70,7 @@ public class LinkService {
 
     public LinkResponse getLink(Member member, Long projectId, Long linkId) {
         Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        checkRelation(project, member);
         Link link = checkLink(linkId);
 
         return new LinkResponse(
@@ -88,7 +88,7 @@ public class LinkService {
     @Transactional
     public LinkResponse updateLink(Member member, Long projectId, Long linkId, LinkUpdateRequest linkUpdateRequest) {
         Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        checkRelation(project, member);
         Link link = checkLink(linkId);
 
         // 작성자만 수정 가능
@@ -129,6 +129,27 @@ public class LinkService {
         linkRepository.delete(link);
     }
 
+    public LinkListResponse searchLinksByTitle(Member member, Long projectId, String keyword) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        List<Link> links = linkRepository.searchByTitle(project, keyword);
+
+        List<LinkResponse> linkList = links.stream()
+                .map(link -> new LinkResponse(
+                        link.getId(),
+                        link.getLinkTitle(),
+                        link.getDescription(),
+                        link.getUrl(),
+                        link.getUploader().getUsername(),
+                        link.getCreatedAt().toLocalDate(),
+                        link.getUpdatedAt().toLocalDate()
+                ))
+                .toList();
+
+        return new LinkListResponse(linkList);
+    }
+
 
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
@@ -148,5 +169,6 @@ public class LinkService {
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
     }
+
 
 }

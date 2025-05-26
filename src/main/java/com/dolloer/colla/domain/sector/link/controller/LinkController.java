@@ -74,4 +74,15 @@ public class LinkController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseLinkEnum.LINK_DELETE_SUCCESS.getMessage()));
     }
 
+    // 링크 이름 기반 검색
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<LinkListResponse>> searchLinksByTitle(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @RequestParam String keyword // ex: ?keyword=검색어
+    ) {
+        LinkListResponse result = linkService.searchLinksByTitle(authUser.getMember(), projectId, keyword);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
 }
