@@ -44,7 +44,7 @@ public class NoticeController {
 
     }
     // 공지 단건 조회
-    @GetMapping("{noticeId}")
+    @GetMapping("/{noticeId}")
     public ResponseEntity<ApiResponse<NoticeResponse>> getNotice(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId,
@@ -66,7 +66,7 @@ public class NoticeController {
     }
 
     // 공지 수정
-    @PatchMapping("{noticeId}")
+    @PatchMapping("/{noticeId}")
     public ResponseEntity<ApiResponse<Void>> updateNotice(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId,
@@ -78,4 +78,14 @@ public class NoticeController {
     }
 
     // 공지 삭제
+    @DeleteMapping("/{noticeId}")
+    public ResponseEntity<ApiResponse<Void>> deleteNotice(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long noticeId
+    ){
+        noticeService.deleteNotice(authUser.getMember(), projectId, noticeId);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseNoticeEnum.NOTICE_DELETE_SUCCESS.getMessage()));
+    }
+
 }

@@ -135,16 +135,33 @@ public class NoticeService {
 
     }
 
+    // 공지 삭제
+    @Transactional
+    public void deleteNotice(Member member, Long projectId, Long noticeId) {
+        Project project = checkProject(projectId);
+        ProjectMember relation = checkRelation(project, member);
+
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new CustomException(ApiResponseNoticeEnum.NOTICE_NOT_EXIST));
+
+        // 관리자만 삭제 가능
+        if (relation.getRole() == ProjectRole.MEMBER) {
+            throw new CustomException(ApiResponseNoticeEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        noticeRepository.delete(notice);
+    }
+
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
+
     // 유저가 프로젝트에 속한지 확인
 
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
     }
-
 }
