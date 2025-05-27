@@ -7,6 +7,7 @@ import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.notice.dto.request.NoticeCreateRequest;
+import com.dolloer.colla.domain.sector.notice.dto.request.NoticeUpdateRequest;
 import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
 import com.dolloer.colla.domain.sector.notice.dto.response.NoticeResponse;
 import com.dolloer.colla.domain.sector.notice.entity.Notice;
@@ -19,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -112,16 +112,39 @@ public class NoticeService {
         );
     }
 
+    // 공지 수정
+    @Transactional
+    public void updateNotice(Member member, Long projectId, Long noticeId, NoticeUpdateRequest noticeUpdateRequest) {
+        Project project = checkProject(projectId);
+        ProjectMember relation = checkRelation(project, member);
+
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new CustomException(ApiResponseNoticeEnum.NOTICE_NOT_EXIST));
+
+        // 관리자만 수정 가능
+        if (relation.getRole() == ProjectRole.MEMBER) {
+            throw new CustomException(ApiResponseNoticeEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        if(noticeUpdateRequest.getTitle()!=null){
+            notice.updateTitle(noticeUpdateRequest.getTitle());
+        }
+        if(noticeUpdateRequest.getDescription()!=null){
+            notice.updateDescription(noticeUpdateRequest.getDescription());
+        }
+
+    }
+
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
     // 유저가 프로젝트에 속한지 확인
+
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
     }
-
 
 }
