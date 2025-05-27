@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -89,15 +90,38 @@ public class NoticeService {
         return new NoticeListResponse(noticeList);
     }
 
+    // 단건 조회
+    public NoticeResponse getNotice(Member member, Long projectId, Long noticeId) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new CustomException(ApiResponseNoticeEnum.NOTICE_NOT_EXIST));
+
+        if (!notice.getProject().equals(project)) {
+            throw new CustomException(ApiResponseNoticeEnum.NOT_THIS_PROJECT_NOTICE);
+        }
+
+        return new NoticeResponse(
+                notice.getId(),
+                notice.getTitle(),
+                notice.getDescription(),
+                notice.getUploader().getUsername(),
+                notice.getCreatedAt().toLocalDate(),
+                notice.getUpdatedAt().toLocalDate()
+        );
+    }
+
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
     // 유저가 프로젝트에 속한지 확인
-
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
     }
+
+
 }

@@ -12,6 +12,7 @@ public enum ApiResponseNoticeEnum implements ApiResponseEnum {
     NOTICE_UPDATE_SUCCESS(HttpStatus.OK,"공지 수정에 성공하였습니다."),
     NOTICE_DELETE_SUCCESS(HttpStatus.OK,"공지 삭제에 성공하였습니다."),
     NOTICE_LIST_SEARCH_SUCCESS(HttpStatus.OK,"공지 검색에 성공하였습니다."),
+
     // 400
     DUPLICATED_NOTICE(HttpStatus.BAD_REQUEST,"동일한 공지명이 존재합니다."),
 
@@ -19,7 +20,8 @@ public enum ApiResponseNoticeEnum implements ApiResponseEnum {
     MEMBER_WRONG_PASSWORD(HttpStatus.UNAUTHORIZED,"비밀번호가 틀렸습니다."),
 
     // 403
-    NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
+    NOT_THIS_PROJECT_NOTICE(HttpStatus.FORBIDDEN,"본 프로젝트의 공지가 아닙니다."),
+    NOTICE_NOT_EXIST(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
     NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다."),
 
     //404

@@ -3,6 +3,7 @@ package com.dolloer.colla.domain.sector.notice.controller;
 
 import com.dolloer.colla.domain.sector.notice.dto.request.NoticeCreateRequest;
 import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
+import com.dolloer.colla.domain.sector.notice.dto.response.NoticeResponse;
 import com.dolloer.colla.domain.sector.notice.service.NoticeService;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseLinkEnum;
@@ -42,6 +43,15 @@ public class NoticeController {
 
     }
     // 공지 단건 조회
+    @GetMapping("{noticeId}")
+    public ResponseEntity<ApiResponse<NoticeResponse>> getNotice(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long noticeId
+    ){
+        NoticeResponse result = noticeService.getNotice(authUser.getMember(),projectId,noticeId);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseNoticeEnum.NOTICE_READ_SUCCESS.getMessage()));
+    }
 
     // 공지 생성
     @PostMapping()
@@ -53,8 +63,6 @@ public class NoticeController {
 
         noticeService.createNotice(authUser.getMember(),projectId,noticeCreateRequest);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseNoticeEnum.NOTICE_CREATE_SUCCESS.getMessage()));
-
-
     }
     // 공지 수정
     // 공지 삭제
