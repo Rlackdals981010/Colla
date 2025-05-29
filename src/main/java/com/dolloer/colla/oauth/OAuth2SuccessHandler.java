@@ -1,5 +1,7 @@
 package com.dolloer.colla.oauth;
 
+import com.dolloer.colla.oauth.entity.OAuthToken;
+import com.dolloer.colla.oauth.repository.OAuthTokenRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,33 +14,46 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
+    private final OAuthTokenRepository tokenRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
-                                        Authentication authentication) throws ServletException, IOException {
+                                        Authentication authentication) throws IOException, ServletException {
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
 
-        OAuth2AuthorizedClient authorizedClient = authorizedClientService.loadAuthorizedClient(
+        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
                 oauthToken.getAuthorizedClientRegistrationId(),
                 oauthToken.getName()
         );
 
-        String accessToken = authorizedClient.getAccessToken().getTokenValue();
-        String refreshToken = authorizedClient.getRefreshToken() != null
-                ? authorizedClient.getRefreshToken().getTokenValue()
-                : "NO_REFRESH";
+        String accessToken = client.getAccessToken().getTokenValue();
+        String refreshToken = client.getRefreshToken() != null
+                ? client.getRefreshToken().getTokenValue()
+                : null;
+        LocalDateTime expiresAt = client.getAccessToken().getExpiresAt()
+                .atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-        System.out.println("✅ AccessToken: " + accessToken);
-        System.out.println("✅ RefreshToken: " + refreshToken);
+        OAuthToken token = tokenRepository.findByProviderAndPrincipalName(
+                        oauthToken.getAuthorizedClientRegistrationId(),
+                        oauthToken.getName())
+                .orElse(new OAuthToken());
 
-        // 필요 시 여기서 DB 저장 또는 Redis 저장 로직 추가
+        token.setProvider(oauthToken.getAuthorizedClientRegistrationId());
+        token.setPrincipalName(oauthToken.getName());
+        token.setAccessToken(accessToken);
+        token.setRefreshToken(refreshToken);
+        token.setExpiresAt(expiresAt);
+
+        tokenRepository.save(token);
 
         response.sendRedirect("http://localhost:3000/oauth/success"); // 원하는 클라이언트 리다이렉션 경로
     }

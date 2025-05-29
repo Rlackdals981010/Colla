@@ -3,6 +3,12 @@ package com.dolloer.colla.config;
 import com.dolloer.colla.oauth.OAuth2SuccessHandler;
 import com.dolloer.colla.security.JwtSecurityFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -28,6 +34,7 @@ public class SecurityConfig {
 
     private final JwtSecurityFilter jwtSecurityFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -59,8 +66,46 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
-                        .successHandler(oAuth2SuccessHandler) // 커스텀 핸들러 등록
+                        .authorizationEndpoint(authorization -> authorization
+                                .authorizationRequestResolver(customAuthorizationRequestResolver(clientRegistrationRepository))
+                        )
+                        .successHandler(oAuth2SuccessHandler)
                 )
                 .build();
+    }
+
+    @Bean
+    public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(
+            ClientRegistrationRepository clientRegistrationRepository) {
+
+        DefaultOAuth2AuthorizationRequestResolver defaultResolver =
+                new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
+
+        return new OAuth2AuthorizationRequestResolver() {
+
+            @Override
+            public OAuth2AuthorizationRequest resolve(jakarta.servlet.http.HttpServletRequest request) {
+                OAuth2AuthorizationRequest originalRequest = defaultResolver.resolve(request);
+                return customizeAuthorizationRequest(originalRequest);
+            }
+
+            @Override
+            public OAuth2AuthorizationRequest resolve(jakarta.servlet.http.HttpServletRequest request, String clientRegistrationId) {
+                OAuth2AuthorizationRequest originalRequest = defaultResolver.resolve(request, clientRegistrationId);
+                return customizeAuthorizationRequest(originalRequest);
+            }
+
+            private OAuth2AuthorizationRequest customizeAuthorizationRequest(OAuth2AuthorizationRequest originalRequest) {
+                if (originalRequest == null) return null;
+
+                Map<String, Object> additionalParameters = new HashMap<>(originalRequest.getAdditionalParameters());
+                additionalParameters.put("access_type", "offline");
+                additionalParameters.put("prompt", "consent");
+
+                return OAuth2AuthorizationRequest.from(originalRequest)
+                        .additionalParameters(additionalParameters)
+                        .build();
+            }
+        };
     }
 }
