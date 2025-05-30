@@ -37,7 +37,10 @@ spring:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
   jpa:
     hibernate:
       ddl-auto: update   # 개발 중엔 update, 실운영은 validate or none

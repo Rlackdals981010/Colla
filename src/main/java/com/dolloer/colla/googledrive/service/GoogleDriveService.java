@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -67,25 +68,29 @@ public class GoogleDriveService {
         }
     }
 
-    // db에서 토큰 조회하고 google drvie 파일 업로드 수행
-    public void uploadFileUsingSavedToken(String principalName) throws IOException, GeneralSecurityException {
+    public void uploadFileWithMultipart(MultipartFile multipartFile, String principalName)
+            throws IOException, GeneralSecurityException {
+
         OAuthToken token = tokenRepository.findByProviderAndPrincipalName("google", principalName)
                 .orElseThrow(() -> new RuntimeException("No token found"));
 
+        String accessToken = token.getAccessToken();
+
         try {
-            uploadFile(token.getAccessToken());
+            uploadMultipartToDrive(multipartFile, accessToken);
         } catch (HttpResponseException e) {
             if (e.getStatusCode() == 401) {
                 String newAccessToken = refreshAccessToken(token);
-                uploadFile(newAccessToken);
+                uploadMultipartToDrive(multipartFile, newAccessToken);
             } else {
                 throw e;
             }
         }
     }
 
-    // google api를 통해 파일 업로드 수행
-    public void uploadFile(String accessToken) throws IOException, GeneralSecurityException {
+    private void uploadMultipartToDrive(MultipartFile multipartFile, String accessToken)
+            throws IOException, GeneralSecurityException {
+
         HttpRequestInitializer credential = request -> {
             request.getHeaders().setAuthorization("Bearer " + accessToken);
         };
@@ -93,18 +98,69 @@ public class GoogleDriveService {
         Drive drive = new Drive.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JacksonFactory.getDefaultInstance(),
-                credential)
-                .setApplicationName("Colla")
-                .build();
+                credential
+        ).setApplicationName("Colla").build();
 
         File fileMetadata = new File();
-        fileMetadata.setName("test.txt");
+        fileMetadata.setName(multipartFile.getOriginalFilename());
 
-        java.io.File filePath = new java.io.File("/Users/kcm/Desktop/Colla/src/main/resources/test.txt");
-        FileContent mediaContent = new FileContent("text/plain", filePath);
+        java.io.File tempFile = java.io.File.createTempFile("upload-", multipartFile.getOriginalFilename());
+        multipartFile.transferTo(tempFile);
+
+        FileContent mediaContent = new FileContent(multipartFile.getContentType(), tempFile);
 
         drive.files().create(fileMetadata, mediaContent)
                 .setFields("id")
                 .execute();
+
+        // 업로드 완료 후 임시 파일 삭제
+        tempFile.delete();
+    }
+
+    public String uploadFileAndReturnFileId(MultipartFile multipartFile, String principalName) throws IOException, GeneralSecurityException {
+        OAuthToken token = tokenRepository.findByProviderAndPrincipalName("google", principalName)
+                .orElseThrow(() -> new RuntimeException("No token found"));
+
+        try {
+            return uploadMultipartToDriveAndGetId(multipartFile, token.getAccessToken());
+        } catch (HttpResponseException e) {
+            if (e.getStatusCode() == 401) {
+                String newAccessToken = refreshAccessToken(token);
+                return uploadMultipartToDriveAndGetId(multipartFile, newAccessToken);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private String uploadMultipartToDriveAndGetId(MultipartFile multipartFile, String accessToken)
+            throws IOException, GeneralSecurityException {
+
+        HttpRequestInitializer credential = request -> {
+            request.getHeaders().setAuthorization("Bearer " + accessToken);
+        };
+
+        Drive drive = new Drive.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("Colla").build();
+
+        File fileMetadata = new File();
+        fileMetadata.setName(multipartFile.getOriginalFilename());
+
+        java.io.File tempFile = java.io.File.createTempFile("upload-", multipartFile.getOriginalFilename());
+        multipartFile.transferTo(tempFile);
+
+        FileContent mediaContent = new FileContent(multipartFile.getContentType(), tempFile);
+
+        File uploadedFile = drive.files().create(fileMetadata, mediaContent)
+                .setFields("id")
+                .execute();
+
+        // 업로드 완료 후 임시 파일 삭제
+        tempFile.delete();
+
+        return uploadedFile.getId();
     }
 }
