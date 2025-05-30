@@ -24,17 +24,22 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final OAuth2AuthorizedClientService authorizedClientService;
     private final OAuthTokenRepository tokenRepository;
 
+    // OAuth2 인증 성공시 실행됨
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
+
+        // 인증 객체를 OAuth2 토큰으로 다운 캐스팅해서 구글 인증 정보에 접근할 수 있께 함
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
 
+        // 발급된 OAuth2 클라 정보 불러오기, 여기에 accesstoken 이랑 refreshtoken, 만료 시간등 ㅇㅆ음
         OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
                 oauthToken.getAuthorizedClientRegistrationId(),
                 oauthToken.getName()
         );
 
+        // client에 있는 토큰 값들 추출
         String accessToken = client.getAccessToken().getTokenValue();
         String refreshToken = client.getRefreshToken() != null
                 ? client.getRefreshToken().getTokenValue()
@@ -42,6 +47,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         LocalDateTime expiresAt = client.getAccessToken().getExpiresAt()
                 .atZone(ZoneId.systemDefault()).toLocalDateTime();
 
+        // DB에 저장할 엔티티
         OAuthToken token = tokenRepository.findByProviderAndPrincipalName(
                         oauthToken.getAuthorizedClientRegistrationId(),
                         oauthToken.getName())

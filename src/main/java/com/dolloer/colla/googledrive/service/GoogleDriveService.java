@@ -36,6 +36,7 @@ public class GoogleDriveService {
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String googleClientSecret;
 
+    // 저장된 refreshtoken으로 accesstoken을 재발급 받고 db에 갱신
     public String refreshAccessToken(OAuthToken token) {
         try {
             String tokenUrl = "https://oauth2.googleapis.com/token";
@@ -66,6 +67,7 @@ public class GoogleDriveService {
         }
     }
 
+    // db에서 토큰 조회하고 google drvie 파일 업로드 수행
     public void uploadFileUsingSavedToken(String principalName) throws IOException, GeneralSecurityException {
         OAuthToken token = tokenRepository.findByProviderAndPrincipalName("google", principalName)
                 .orElseThrow(() -> new RuntimeException("No token found"));
@@ -82,6 +84,7 @@ public class GoogleDriveService {
         }
     }
 
+    // google api를 통해 파일 업로드 수행
     public void uploadFile(String accessToken) throws IOException, GeneralSecurityException {
         HttpRequestInitializer credential = request -> {
             request.getHeaders().setAuthorization("Bearer " + accessToken);

@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
-                )
+                ) // 커스텀 Eesolver 등록 및 access_type = offline과 prompt=consent로 refresh token 간제
                 .oauth2Login(oauth -> oauth
                         .authorizationEndpoint(authorization -> authorization
                                 .authorizationRequestResolver(customAuthorizationRequestResolver(clientRegistrationRepository))
@@ -74,6 +74,7 @@ public class SecurityConfig {
                 .build();
     }
 
+    // 70번줄 커스텀 요청 리졸버가 이거임
     @Bean
     public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(
             ClientRegistrationRepository clientRegistrationRepository) {
