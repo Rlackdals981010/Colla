@@ -1,5 +1,6 @@
 package com.dolloer.colla.domain.sector.file.entity;
 
+import com.dolloer.colla.domain.project.entity.Project;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,9 @@ public class FileRecord {
     private String fileName;
 
     private String googleDriveFileId;
+
+    @Column(name = "project_id", nullable = false)
+    private Long projectId;
 
     private String uploadedBy; // principalName or colla 내부 userId
 
