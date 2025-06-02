@@ -3,6 +3,7 @@ package com.dolloer.colla.domain.sector.file.service;
 import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
+import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.file.dto.response.FileListResponse;
@@ -11,6 +12,7 @@ import com.dolloer.colla.domain.sector.file.entity.FileRecord;
 import com.dolloer.colla.domain.sector.file.repository.FileRecordRepository;
 import com.dolloer.colla.googledrive.service.GoogleDriveService;
 import com.dolloer.colla.response.exception.CustomException;
+import com.dolloer.colla.response.response.ApiResponseLinkEnum;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import com.dolloer.colla.response.response.ApiResponseFileEnum;
 import jakarta.transaction.Transactional;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -47,7 +50,7 @@ public class FileService {
                 .fileName(Optional.ofNullable(file.getOriginalFilename()).orElse("unnamed"))
                 .googleDriveFileId(googleDriveFileId)
                 .projectId(projectId)
-                .uploadedBy(principalName)
+                .uploader(member)
                 .uploadedAt(LocalDateTime.now())
                 .build();
 
@@ -63,7 +66,7 @@ public class FileService {
         List<FileResponse> fileList = files.stream()
                 .map( file -> new FileResponse(
                         file.getFileName(),
-                        file.getUploadedBy(),
+                        file.getUploader().getId(),
                         file.getUploadedAt(),
                         file.getGoogleDriveFileId()
                         )
@@ -84,7 +87,26 @@ public class FileService {
             throw new CustomException(ApiResponseFileEnum.FILE_PROJECT_MISMATCH);
         }
 
-        return googleDriveService.downloadFile(fileRecord.getGoogleDriveFileId(), fileRecord.getUploadedBy());
+        return googleDriveService.downloadFile(fileRecord.getGoogleDriveFileId(), fileRecord.getUploader().getId().toString());
+    }
+
+    @Transactional
+    public void deleteFile(Member member, Long projectId, Long fileId) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+
+        FileRecord fileRecord = fileRecordRepository.findById(fileId)
+                .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
+
+        boolean isUploader = member.equals(fileRecord.getUploader());
+        boolean isManager = projectMember.getRole() == ProjectRole.OWNER || projectMember.getRole() == ProjectRole.ADMIN;
+
+        // 업로더거나 매니저만 삭제 가능
+        if (!isUploader && !isManager) {
+            throw new CustomException(ApiResponseFileEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        fileRecordRepository.delete(fileRecord);
     }
 
     // 프로젝트 존재 확인
@@ -98,6 +120,7 @@ public class FileService {
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
     }
+
 
 
 }

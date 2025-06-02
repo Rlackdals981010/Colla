@@ -1,5 +1,6 @@
 package com.dolloer.colla.domain.sector.file.entity;
 
+import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.project.entity.Project;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,7 +25,8 @@ public class FileRecord {
     @Column(name = "project_id", nullable = false)
     private Long projectId;
 
-    private String uploadedBy; // principalName or colla 내부 userId
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member uploader;
 
     private LocalDateTime uploadedAt;
 }

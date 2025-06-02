@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class FileResponse {
     private String fileName;
-    private String uploadedBy;
+    private Long uploadedBy;
     private LocalDateTime uploadedAt;
     private String googleDriveFileId;
 }

@@ -63,4 +63,15 @@ public class FileController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"downloaded-file\"")
                 .body(outputStream.toByteArray());
     }
+
+    @DeleteMapping("/{fileId}")
+    public ResponseEntity<ApiResponse<Void>> deleteFile(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long fileId
+    ){
+        fileService.deleteFile(authUser.getMember(), projectId, fileId);
+        return ResponseEntity.ok(ApiResponse.success( ApiResponseFileEnum.FIlE_DELETE_SUCCESS.getMessage()));
+
+    }
 }
