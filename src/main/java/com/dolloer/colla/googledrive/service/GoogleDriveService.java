@@ -20,6 +20,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Map;
@@ -162,5 +163,24 @@ public class GoogleDriveService {
         tempFile.delete();
 
         return uploadedFile.getId();
+    }
+
+    public ByteArrayOutputStream downloadFile(String googleDriveFileId, String principalName) throws IOException, GeneralSecurityException {
+        OAuthToken token = tokenRepository.findByProviderAndPrincipalName("google", principalName)
+                .orElseThrow(() -> new RuntimeException("No token found"));
+
+        HttpRequestInitializer credential = request -> {
+            request.getHeaders().setAuthorization("Bearer " + token.getAccessToken());
+        };
+
+        Drive drive = new Drive.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("Colla").build();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        drive.files().get(googleDriveFileId).executeMediaAndDownloadTo(outputStream);
+        return outputStream;
     }
 }

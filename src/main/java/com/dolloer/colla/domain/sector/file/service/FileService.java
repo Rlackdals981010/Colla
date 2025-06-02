@@ -12,11 +12,13 @@ import com.dolloer.colla.domain.sector.file.repository.FileRecordRepository;
 import com.dolloer.colla.googledrive.service.GoogleDriveService;
 import com.dolloer.colla.response.exception.CustomException;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
+import com.dolloer.colla.response.response.ApiResponseFileEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
@@ -68,6 +70,21 @@ public class FileService {
                 ).toList();
 
         return new FileListResponse(fileList);
+    }
+
+
+    public ByteArrayOutputStream downloadFile(Long projectId, Long fileRecordId, Member member) throws IOException, GeneralSecurityException {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        FileRecord fileRecord = fileRecordRepository.findById(fileRecordId)
+                .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
+
+        if (!fileRecord.getProjectId().equals(projectId)) {
+            throw new CustomException(ApiResponseFileEnum.FILE_PROJECT_MISMATCH);
+        }
+
+        return googleDriveService.downloadFile(fileRecord.getGoogleDriveFileId(), fileRecord.getUploadedBy());
     }
 
     // 프로젝트 존재 확인
