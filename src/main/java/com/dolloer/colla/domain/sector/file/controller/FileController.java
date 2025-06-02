@@ -18,14 +18,14 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 @RestController
-@RequestMapping()
+@RequestMapping("/project/{projectId}/files")
 @RequiredArgsConstructor
 public class FileController {
 
     private final FileService fileService;
 
     // 파일 업로드
-    @PostMapping("/files/upload/{projectId}")
+    @PostMapping("/upload")
     public ResponseEntity<String> upload(
             @PathVariable Long projectId,
             @RequestParam("file") MultipartFile file,
@@ -41,7 +41,7 @@ public class FileController {
     }
 
     // 프로젝트 소속 링크 글 전체 보기
-    @GetMapping("/files/{projectId}")
+    @GetMapping()
     public ResponseEntity<ApiResponse<FileListResponse>> getFileList(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId
@@ -50,7 +50,7 @@ public class FileController {
         return ResponseEntity.ok(ApiResponse.success(result, ApiResponseFileEnum.FIlE_LIST_GET_SUCCESS.getMessage()));
     }
 
-    @GetMapping("/{projectId}/files/{fileId}/download")
+    @GetMapping("/{fileId}/download")
     public ResponseEntity<byte[]> downloadFile(
             @PathVariable Long projectId,
             @PathVariable Long fileId,
