@@ -46,3 +46,7 @@ application.properties
 
 ## log
 *.log
+
+## 서비스 계정
+src/main/resources/service-account.json
+/service-account.json
