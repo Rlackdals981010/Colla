@@ -39,6 +39,7 @@ out/
 ### env ###
 src/main/resources/.env
 /.env
+
 # Application config
 application.yml
 application.properties
@@ -49,4 +50,3 @@ application.properties
 ## 서비스 계정
 src/main/resources/service-account.json
 /service-account.json
-/Users/kcm/Desktop/Colla/src/main/resources/service-account.json
