@@ -51,7 +51,6 @@ public class FileController {
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId
     ) {
-        log.info("호출됨?");
         FileListResponse result = fileService.getFileList(authUser.getMember(), projectId);
         return ResponseEntity.ok(ApiResponse.success(result, ApiResponseFileEnum.FIlE_LIST_GET_SUCCESS.getMessage()));
     }
