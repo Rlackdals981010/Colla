@@ -75,7 +75,7 @@ public class FileController {
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId,
             @PathVariable Long fileId
-    ) {
+    ) throws GeneralSecurityException, IOException {
         fileService.deleteFile(authUser.getMember(), projectId, fileId);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseFileEnum.FIlE_DELETE_SUCCESS.getMessage()));
     }
