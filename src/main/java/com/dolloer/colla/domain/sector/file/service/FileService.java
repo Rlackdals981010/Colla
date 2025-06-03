@@ -6,6 +6,7 @@ import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
+import com.dolloer.colla.domain.sector.file.dto.response.FileDetailResponse;
 import com.dolloer.colla.domain.sector.file.dto.response.FileListResponse;
 import com.dolloer.colla.domain.sector.file.dto.response.FileResponse;
 import com.dolloer.colla.domain.sector.file.entity.FileRecord;
@@ -16,6 +17,7 @@ import com.dolloer.colla.response.response.ApiResponseFileEnum;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FileService {
 
@@ -36,7 +39,7 @@ public class FileService {
     private final ProjectMemberRepository projectMemberRepository;
 
     @Transactional
-    public void uploadFile(Long projectId, MultipartFile file, Member member) throws IOException, GeneralSecurityException {
+    public void uploadFile(Long projectId, MultipartFile file, String title, String description, Member member) throws IOException, GeneralSecurityException {
         Project project = checkProject(projectId);
         checkRelation(project, member);
 
@@ -46,6 +49,8 @@ public class FileService {
         FileRecord fileRecord = FileRecord.builder()
                 .fileName(Optional.ofNullable(file.getOriginalFilename()).orElse("unnamed"))
                 .googleDriveFileId(googleDriveFileId)
+                .title(title)
+                .description(description)
                 .projectId(projectId)
                 .uploader(member)
                 .uploadedAt(LocalDateTime.now())
@@ -64,6 +69,7 @@ public class FileService {
                 .map(file -> new FileResponse(
                         file.getId(),
                         file.getFileName(),
+                        file.getTitle(),
                         file.getUploader().getId(),
                         file.getUploadedAt(),
                         file.getGoogleDriveFileId()
@@ -103,6 +109,64 @@ public class FileService {
         }
 
         fileRecordRepository.delete(fileRecord);
+    }
+
+    @Transactional
+    public void updateFile(Long projectId, Long fileId, Member member,
+                           MultipartFile newFile, String title, String description) throws IOException, GeneralSecurityException {
+
+        if ((newFile == null || newFile.isEmpty()) &&
+                (title == null || title.isBlank()) &&
+                (description == null || description.isBlank())) {
+            throw new CustomException(ApiResponseFileEnum.NO_UPDATE_REQUESTED);
+        }
+
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+
+        FileRecord fileRecord = fileRecordRepository.findById(fileId)
+                .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
+
+        boolean isUploader = member.getId().equals(fileRecord.getUploader().getId());
+        boolean isManager = projectMember.getRole() == ProjectRole.OWNER || projectMember.getRole() == ProjectRole.ADMIN;
+
+        if (!isUploader && !isManager) {
+            throw new CustomException(ApiResponseFileEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        // 파일 내용 교체
+        if (newFile != null && !newFile.isEmpty()) {
+            // 기존 파일 삭제
+            try {
+                googleDriveService.deleteFile(fileRecord.getGoogleDriveFileId());
+            } catch (Exception e) {
+                log.warn("기존 파일 삭제 실패 (무시하고 새 파일 업로드 진행): {}", e.getMessage());
+            }
+
+            // 새 파일 업로드
+            String newFileId = googleDriveService.uploadFileAndReturnFileId(newFile);
+            fileRecord.updateGoogleDriveFileId(newFileId);
+        }
+
+        // 제목 수정
+        if (title != null && !title.isBlank()) {
+            fileRecord.updateTitle(title);
+        }
+
+        // 설명 수정
+        if (description != null && !description.isBlank()) {
+            fileRecord.updateDescription(description);
+        }
+    }
+
+    public FileDetailResponse detailFile(Long projectId, Long fileId, Member member) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        FileRecord fileRecord = fileRecordRepository.findById(fileId)
+                .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
+
+        return new FileDetailResponse(fileId, fileRecord.getFileName(), fileRecord.getTitle(), fileRecord.getDescription(), fileRecord.getUploader().getId(), fileRecord.getUploadedAt());
     }
 
     private Project checkProject(Long projectId) {

@@ -22,6 +22,12 @@ public class FileRecord {
 
     private String googleDriveFileId;
 
+    @Column(length = 255)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @Column(name = "project_id", nullable = false)
     private Long projectId;
 
@@ -29,4 +35,16 @@ public class FileRecord {
     private Member uploader;
 
     private LocalDateTime uploadedAt;
+
+    public void updateTitle(String title) {
+        this.fileName = title;
+    }
+
+    public void updateDescription(String description) {
+        this.description = description;
+    }
+
+    public void updateGoogleDriveFileId(String newFileId) {
+        this.googleDriveFileId = newFileId;
+    }
 }

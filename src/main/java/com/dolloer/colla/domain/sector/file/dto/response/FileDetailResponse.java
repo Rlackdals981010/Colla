@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class FileResponse {
+public class FileDetailResponse {
     private Long fileId;
     private String fileName;
     private String title;
+    private String description;
     private Long uploadedBy;
     private LocalDateTime uploadedAt;
-    private String googleDriveFileId;
 }

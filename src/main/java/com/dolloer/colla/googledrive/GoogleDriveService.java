@@ -71,4 +71,10 @@ public class GoogleDriveService {
         driveService.files().get(googleDriveFileId).executeMediaAndDownloadTo(outputStream);
         return outputStream;
     }
+
+    // 변경시 파일 삭제
+    public void deleteFile(String fileId) throws IOException, GeneralSecurityException {
+        Drive driveService = getDriveService();
+        driveService.files().delete(fileId).execute();
+    }
 }

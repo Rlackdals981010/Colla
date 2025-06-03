@@ -1,5 +1,6 @@
 package com.dolloer.colla.domain.sector.file.controller;
 
+import com.dolloer.colla.domain.sector.file.dto.response.FileDetailResponse;
 import com.dolloer.colla.domain.sector.file.dto.response.FileListResponse;
 import com.dolloer.colla.domain.sector.file.service.FileService;
 import com.dolloer.colla.response.response.ApiResponse;
@@ -32,21 +33,17 @@ public class FileController {
     public ResponseEntity<String> upload(
             @PathVariable Long projectId,
             @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
             @AuthenticationPrincipal AuthUser authUser
     ) {
         try {
-            fileService.uploadFile(projectId, file, authUser.getMember());
+            fileService.uploadFile(projectId, file, title, description, authUser.getMember());
             return ResponseEntity.ok(ApiResponseFileEnum.FIlE_UPLOAD_SUCCESS.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("업로드 실패: " + e.getMessage());
         }
     }
-//    @PostMapping("/upload")
-//    public ResponseEntity<String> upload(HttpServletRequest request) {
-//        System.out.println("🔥 Content-Type: " + request.getContentType());
-//        System.out.println("🔥 Is Multipart: " + (request instanceof MultipartHttpServletRequest));
-//        return ResponseEntity.ok("debug");
-//    }
 
     // 파일 목록 조회
     @GetMapping
@@ -83,4 +80,32 @@ public class FileController {
         fileService.deleteFile(authUser.getMember(), projectId, fileId);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseFileEnum.FIlE_DELETE_SUCCESS.getMessage()));
     }
+
+    // 파일 글 수정
+    @PatchMapping("/{fileId}")
+    public ResponseEntity<ApiResponse<Void>> updateFile(
+            @PathVariable Long projectId,
+            @PathVariable Long fileId,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @AuthenticationPrincipal AuthUser authUser
+    ) throws GeneralSecurityException, IOException {
+        fileService.updateFile(projectId, fileId, authUser.getMember(), file, title, description);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseFileEnum.FIlE_UPDATE_SUCCESS.getMessage()));
+
+    }
+
+    // 파일 단건 보기
+    @GetMapping("/{fileId}")
+    public ResponseEntity<ApiResponse<FileDetailResponse>> detailFile(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long fileId
+    ) {
+        FileDetailResponse result = fileService.detailFile(projectId, fileId, authUser.getMember());
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseFileEnum.FIlE_DETAIL_GET_SUCCESS.getMessage()));
+
+    }
+    // 파일 이름 기반 검색
 }
