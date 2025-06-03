@@ -1,7 +1,5 @@
 package com.dolloer.colla.googledrive.service;
 
-import com.dolloer.colla.oauth.entity.OAuthToken;
-import com.dolloer.colla.oauth.repository.OAuthTokenRepository;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpRequestInitializer;
@@ -10,6 +8,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -27,9 +26,9 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GoogleDriveService {
 
-    private final OAuthTokenRepository tokenRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
@@ -166,11 +165,27 @@ public class GoogleDriveService {
     }
 
     public ByteArrayOutputStream downloadFile(String googleDriveFileId, String principalName) throws IOException, GeneralSecurityException {
+        log.info("principalName = " + principalName);
         OAuthToken token = tokenRepository.findByProviderAndPrincipalName("google", principalName)
                 .orElseThrow(() -> new RuntimeException("No token found"));
 
+        try {
+            return downloadFromDrive(googleDriveFileId, token.getAccessToken());
+        } catch (HttpResponseException e) {
+            if (e.getStatusCode() == 401) {
+                String newAccessToken = refreshAccessToken(token);
+                return downloadFromDrive(googleDriveFileId, newAccessToken);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private ByteArrayOutputStream downloadFromDrive(String fileId, String accessToken)
+            throws IOException, GeneralSecurityException {
+
         HttpRequestInitializer credential = request -> {
-            request.getHeaders().setAuthorization("Bearer " + token.getAccessToken());
+            request.getHeaders().setAuthorization("Bearer " + accessToken);
         };
 
         Drive drive = new Drive.Builder(
@@ -180,7 +195,10 @@ public class GoogleDriveService {
         ).setApplicationName("Colla").build();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        drive.files().get(googleDriveFileId).executeMediaAndDownloadTo(outputStream);
+        drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
         return outputStream;
     }
+
+
+
 }

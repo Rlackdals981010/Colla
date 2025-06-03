@@ -19,24 +19,7 @@ spring:
           auth: true
           starttls:
             enable: true
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${CLIENT_ID}
-            client-secret: ${CLIENT_PW}
-            scope:
-              - https://www.googleapis.com/auth/drive.file
-              - https://www.googleapis.com/auth/userinfo.email
-              - https://www.googleapis.com/auth/userinfo.profile
-              - openid
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+
   servlet:
     multipart:
       max-file-size: 1000MB

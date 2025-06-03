@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class FileResponse {
+    private Long fileId;
     private String fileName;
     private Long uploadedBy;
     private LocalDateTime uploadedAt;

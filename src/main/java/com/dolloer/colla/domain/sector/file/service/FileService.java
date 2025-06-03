@@ -65,6 +65,7 @@ public class FileService {
 
         List<FileResponse> fileList = files.stream()
                 .map( file -> new FileResponse(
+                        file.getId(),
                         file.getFileName(),
                         file.getUploader().getId(),
                         file.getUploadedAt(),
@@ -87,7 +88,10 @@ public class FileService {
             throw new CustomException(ApiResponseFileEnum.FILE_PROJECT_MISMATCH);
         }
 
-        return googleDriveService.downloadFile(fileRecord.getGoogleDriveFileId(), fileRecord.getUploader().getId().toString());
+        return googleDriveService.downloadFile(
+                fileRecord.getGoogleDriveFileId(),
+                fileRecord.getUploader().getGooglePrincipalName().toString()
+        );
     }
 
     @Transactional
