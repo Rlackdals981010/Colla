@@ -9,13 +9,14 @@ import com.google.api.services.drive.model.File;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.*;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class GoogleDriveService {
 
     private Drive getDriveService() throws IOException, GeneralSecurityException {
         GoogleCredential credential = GoogleCredential
-                .fromStream(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(SERVICE_ACCOUNT_JSON_PATH)))
+                .fromStream(new ClassPathResource(SERVICE_ACCOUNT_JSON_PATH.replace("classpath:", "")).getInputStream())
                 .createScoped(Collections.singleton("https://www.googleapis.com/auth/drive"));
 
         return new Drive.Builder(
@@ -70,6 +71,4 @@ public class GoogleDriveService {
         driveService.files().get(googleDriveFileId).executeMediaAndDownloadTo(outputStream);
         return outputStream;
     }
-
-
 }

@@ -38,4 +38,4 @@ jwt:
 
 gcp:
   service-account:
-    path: service-account.json
+    path: ${GCP_SERVICE_ACCOUNT_JSON_PATH}
