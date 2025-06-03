@@ -94,7 +94,7 @@ public class FileService {
     }
 
     @Transactional
-    public void deleteFile(Member member, Long projectId, Long fileId) {
+    public void deleteFile(Member member, Long projectId, Long fileId) throws GeneralSecurityException, IOException {
         Project project = checkProject(projectId);
         ProjectMember projectMember = checkRelation(project, member);
 
@@ -108,6 +108,7 @@ public class FileService {
             throw new CustomException(ApiResponseFileEnum.NOT_ENOUGH_PERMISSION);
         }
 
+        googleDriveService.deleteFile(fileRecord.getGoogleDriveFileId());
         fileRecordRepository.delete(fileRecord);
     }
 
@@ -165,6 +166,7 @@ public class FileService {
 
         FileRecord fileRecord = fileRecordRepository.findById(fileId)
                 .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
+
 
         return new FileDetailResponse(fileId, fileRecord.getFileName(), fileRecord.getTitle(), fileRecord.getDescription(), fileRecord.getUploader().getId(), fileRecord.getUploadedAt());
     }
