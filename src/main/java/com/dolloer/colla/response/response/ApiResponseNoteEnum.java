@@ -9,6 +9,7 @@ public enum ApiResponseNoteEnum implements ApiResponseEnum {
     NOTE_CREATE_SUCCESS(HttpStatus.OK,"노트(회의록) 생성에 성공하였습니다."),
     NOTE_LIST_GET_SUCCESS(HttpStatus.OK,"노트(회의록) 전체 조회에 성공하였습니다."),
     NOTE_GET_SUCCESS(HttpStatus.OK,"노트(회의록) 단건 조회에 성공하였습니다."),
+    NOTE_SEARCH_SUCCESS(HttpStatus.OK,"노트(회의록) 검색에 성공하였습니다."),
 
     // 400
     DUPLICATED_LINK(HttpStatus.BAD_REQUEST,"동일한 링크가 존재합니다."),

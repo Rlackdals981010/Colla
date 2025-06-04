@@ -5,9 +5,11 @@ import com.dolloer.colla.domain.sector.note.dto.request.NoteCreateRequest;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteDetailResponse;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteListResponse;
 import com.dolloer.colla.domain.sector.note.service.NoteService;
+import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseLinkEnum;
 import com.dolloer.colla.response.response.ApiResponseNoteEnum;
+import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
 import com.dolloer.colla.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +44,7 @@ public class NoteController {
         return ResponseEntity.ok(ApiResponse.success(result,ApiResponseNoteEnum.NOTE_LIST_GET_SUCCESS.getMessage()));
     }
 
+    // 노트 단건 조회
     @GetMapping("/{noteId}")
     public ResponseEntity<ApiResponse<NoteDetailResponse>> getNote(
             @AuthenticationPrincipal AuthUser authUser,
@@ -50,6 +53,17 @@ public class NoteController {
     ){
         NoteDetailResponse result = noteService.getNote(authUser.getMember(), projectId,noteId);
         return ResponseEntity.ok(ApiResponse.success(result,ApiResponseNoteEnum.NOTE_GET_SUCCESS.getMessage()));
+    }
+
+    // 노트 검색 조회
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<NoteListResponse>> searchNoteByTitle(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @RequestParam String keyword
+    ){
+        NoteListResponse result = noteService.searchNoteByTitle(authUser.getMember(), projectId, keyword);
+        return ResponseEntity.ok(ApiResponse.success(result,ApiResponseNoteEnum.NOTE_SEARCH_SUCCESS.getMessage()));
     }
 
 

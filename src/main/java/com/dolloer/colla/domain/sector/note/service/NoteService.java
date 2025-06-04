@@ -80,12 +80,31 @@ public class NoteService {
         );
     }
 
+    // 검색
+    public NoteListResponse searchNoteByTitle(Member member, Long projectId, String keyword) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        List<Note> notes = noteRepository.searchByTitle(project, keyword);
+
+        List<NoteResponse> noteList = notes.stream()
+                .map(note -> new NoteResponse(
+                        note.getId(),
+                        note.getTitle(),
+                        note.getUploader().getUsername(),
+                        note.getCreatedAt().toLocalDate(),
+                        note.getUpdatedAt().toLocalDate()
+                ))
+                .toList();
+
+        return new NoteListResponse(noteList);
+    }
+
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
-
     // 유저가 프로젝트에 속한지 확인
 
     private ProjectMember checkRelation(Project project, Member member ){
