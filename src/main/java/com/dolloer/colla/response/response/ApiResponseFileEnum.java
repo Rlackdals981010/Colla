@@ -11,6 +11,7 @@ public enum ApiResponseFileEnum implements ApiResponseEnum {
     FIlE_DELETE_SUCCESS(HttpStatus.OK,"파일 삭제에 성공하였습니다."),
     FIlE_UPDATE_SUCCESS(HttpStatus.OK,"파일 수정에 성공하였습니다."),
     FIlE_DETAIL_GET_SUCCESS(HttpStatus.OK,"파일 단건 조회에 성공하였습니다."),
+    FIlE_LIST_SEARCH_SUCCESS(HttpStatus.OK,"파일 목록 검색에 성공하였습니다."),
 
     // 400
     DUPLICATED_LINK(HttpStatus.BAD_REQUEST,"동일한 링크가 존재합니다."),

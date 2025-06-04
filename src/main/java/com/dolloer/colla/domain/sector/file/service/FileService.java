@@ -171,6 +171,26 @@ public class FileService {
         return new FileDetailResponse(fileId, fileRecord.getFileName(), fileRecord.getTitle(), fileRecord.getDescription(), fileRecord.getUploader().getId(), fileRecord.getUploadedAt());
     }
 
+    // 검색
+    public FileListResponse searchFilesByTitle(Member member, Long projectId, String keyword) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        List<FileRecord> files = fileRecordRepository.searchByTitle(project.getId(), keyword);
+
+        List<FileResponse> fileList = files.stream()
+                .map(file -> new FileResponse(
+                        file.getId(),
+                        file.getFileName(),
+                        file.getTitle(),
+                        file.getUploader().getId(),
+                        file.getUploadedAt(),
+                        file.getGoogleDriveFileId()
+                )).toList();
+
+        return new FileListResponse(fileList);
+    }
+
     private Project checkProject(Long projectId) {
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));

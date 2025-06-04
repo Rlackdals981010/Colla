@@ -3,8 +3,10 @@ package com.dolloer.colla.domain.sector.file.controller;
 import com.dolloer.colla.domain.sector.file.dto.response.FileDetailResponse;
 import com.dolloer.colla.domain.sector.file.dto.response.FileListResponse;
 import com.dolloer.colla.domain.sector.file.service.FileService;
+import com.dolloer.colla.domain.sector.link.dto.response.LinkListResponse;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseFileEnum;
+import com.dolloer.colla.response.response.ApiResponseLinkEnum;
 import com.dolloer.colla.security.AuthUser;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -107,4 +109,13 @@ public class FileController {
 
     }
     // 파일 이름 기반 검색
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<FileListResponse>> searchLinksByTitle(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @RequestParam String keyword // ex: ?keyword=검색어
+    ) {
+        FileListResponse result = fileService.searchFilesByTitle(authUser.getMember(), projectId, keyword);
+        return ResponseEntity.ok(ApiResponse.success(result, ApiResponseFileEnum.FIlE_LIST_SEARCH_SUCCESS.getMessage()));
+    }
 }
