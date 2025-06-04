@@ -6,13 +6,20 @@ import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.note.dto.request.NoteCreateRequest;
+import com.dolloer.colla.domain.sector.note.dto.response.NoteDetailResponse;
+import com.dolloer.colla.domain.sector.note.dto.response.NoteListResponse;
+import com.dolloer.colla.domain.sector.note.dto.response.NoteResponse;
 import com.dolloer.colla.domain.sector.note.entity.Note;
 import com.dolloer.colla.domain.sector.note.repository.NoteRepository;
 import com.dolloer.colla.response.exception.CustomException;
+import com.dolloer.colla.response.response.ApiResponseNoteEnum;
+import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,14 +38,56 @@ public class NoteService {
         noteRepository.save(newNote);
     }
 
+    // 리스트 조회
+    public NoteListResponse getNoteList(Member member, Long projectId) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
 
+        List<Note> notes = noteRepository.findAllByProject(project);
+
+        List<NoteResponse> noteList = notes.stream()
+                .map(note -> new NoteResponse(
+                        note.getId(),
+                        note.getTitle(),
+                        note.getUploader().getUsername(),
+                        note.getCreatedAt().toLocalDate(),
+                        note.getUpdatedAt().toLocalDate()
+                ))
+                .toList();
+
+        return new NoteListResponse(noteList);
+    }
+
+    // 단건 디테일 조회
+    public NoteDetailResponse getNote(Member member, Long projectId, Long noteId) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new CustomException(ApiResponseNoteEnum.NOTE_NOT_EXIST));
+
+        if (!note.getProject().equals(project)) {
+            throw new CustomException(ApiResponseNoteEnum.NOT_THIS_PROJECT_NOTICE);
+        }
+
+        return new NoteDetailResponse(
+                note.getId(),
+                note.getTitle(),
+                note.getText(),
+                note.getUploader().getUsername(),
+                note.getCreatedAt().toLocalDate(),
+                note.getUpdatedAt().toLocalDate()
+        );
+    }
 
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
+
     // 유저가 프로젝트에 속한지 확인
+
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));

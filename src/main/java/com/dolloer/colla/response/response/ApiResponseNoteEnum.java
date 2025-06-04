@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 public enum ApiResponseNoteEnum implements ApiResponseEnum {
     // 200
     NOTE_CREATE_SUCCESS(HttpStatus.OK,"노트(회의록) 생성에 성공하였습니다."),
+    NOTE_LIST_GET_SUCCESS(HttpStatus.OK,"노트(회의록) 전체 조회에 성공하였습니다."),
+    NOTE_GET_SUCCESS(HttpStatus.OK,"노트(회의록) 단건 조회에 성공하였습니다."),
 
     // 400
     DUPLICATED_LINK(HttpStatus.BAD_REQUEST,"동일한 링크가 존재합니다."),
@@ -16,6 +18,8 @@ public enum ApiResponseNoteEnum implements ApiResponseEnum {
 
     // 403
     NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
+    NOT_THIS_PROJECT_NOTICE(HttpStatus.FORBIDDEN,"해당 프로젝트의 노트가 아닙니다."),
+    NOTE_NOT_EXIST(HttpStatus.FORBIDDEN,"존재하지 않는 회의록 입니다."),
     NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다."),
 
     //404
