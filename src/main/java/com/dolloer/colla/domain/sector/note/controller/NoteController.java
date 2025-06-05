@@ -2,6 +2,7 @@ package com.dolloer.colla.domain.sector.note.controller;
 
 import com.dolloer.colla.domain.sector.link.dto.request.LinkCreateRequest;
 import com.dolloer.colla.domain.sector.note.dto.request.NoteCreateRequest;
+import com.dolloer.colla.domain.sector.note.dto.request.NoteUpdateRequest;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteDetailResponse;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteListResponse;
 import com.dolloer.colla.domain.sector.note.service.NoteService;
@@ -66,5 +67,16 @@ public class NoteController {
         return ResponseEntity.ok(ApiResponse.success(result,ApiResponseNoteEnum.NOTE_SEARCH_SUCCESS.getMessage()));
     }
 
+    // 노트 수정
+    @PatchMapping("/{noteId}")
+    public ResponseEntity<ApiResponse<Void>> updateNote(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long noteId,
+            @RequestBody NoteUpdateRequest noteUpdateRequest
+    ){
+        noteService.updateNote(authUser.getMember(),projectId,noteId,noteUpdateRequest);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseNoteEnum.NOTE_UPDATE_SUCCESS.getMessage()));
+    }
 
 }

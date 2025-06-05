@@ -35,4 +35,11 @@ public class Note extends Timestamped {
         this.project = project;
     }
 
+    public void updateTitle(String title){
+        this.title = title;
+    }
+    public void updateText(String text){
+        this.text = text;
+    }
+
 }

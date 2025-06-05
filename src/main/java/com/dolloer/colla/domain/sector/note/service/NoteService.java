@@ -3,15 +3,18 @@ package com.dolloer.colla.domain.sector.note.service;
 import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
+import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.note.dto.request.NoteCreateRequest;
+import com.dolloer.colla.domain.sector.note.dto.request.NoteUpdateRequest;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteDetailResponse;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteListResponse;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteResponse;
 import com.dolloer.colla.domain.sector.note.entity.Note;
 import com.dolloer.colla.domain.sector.note.repository.NoteRepository;
 import com.dolloer.colla.response.exception.CustomException;
+import com.dolloer.colla.response.response.ApiResponseFileEnum;
 import com.dolloer.colla.response.response.ApiResponseNoteEnum;
 import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
 import com.dolloer.colla.response.response.ApiResponseProjectEnum;
@@ -100,13 +103,37 @@ public class NoteService {
         return new NoteListResponse(noteList);
     }
 
+    // 노트 수정
+    @Transactional
+    public void updateNote(Member member, Long projectId, Long noteId, NoteUpdateRequest noteUpdateRequest) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new CustomException(ApiResponseNoteEnum.NOTE_NOT_EXIST));
+
+        boolean isUploader = member.getId().equals(note.getUploader().getId());
+        boolean isManager = projectMember.getRole() == ProjectRole.OWNER || projectMember.getRole() == ProjectRole.ADMIN;
+
+        if (!isUploader && !isManager) {
+            throw new CustomException(ApiResponseNoteEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        if(noteUpdateRequest.getText()!=null&&!noteUpdateRequest.getText().isBlank()){
+            note.updateText(noteUpdateRequest.getText());
+        }
+        if(noteUpdateRequest.getTitle()!=null&&!noteUpdateRequest.getTitle().isBlank()){
+            note.updateTitle(noteUpdateRequest.getTitle());
+        }
+    }
+
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
-    // 유저가 프로젝트에 속한지 확인
 
+    // 유저가 프로젝트에 속한지 확인
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
