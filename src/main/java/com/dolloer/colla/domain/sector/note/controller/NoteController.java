@@ -79,4 +79,16 @@ public class NoteController {
         return ResponseEntity.ok(ApiResponse.success(ApiResponseNoteEnum.NOTE_UPDATE_SUCCESS.getMessage()));
     }
 
+    // 노트 삭제
+    @DeleteMapping("/{noteId}")
+    public ResponseEntity<ApiResponse<Void>> deleteNote(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long noteId
+    ){
+        noteService.deleteNote(authUser.getMember(),projectId,noteId);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseNoteEnum.NOTE_DELETE_SUCCESS.getMessage()));
+    }
+
+
 }

@@ -127,13 +127,33 @@ public class NoteService {
         }
     }
 
+    // 노트 삭제
+    @Transactional
+    public void deleteNote(Member member, Long projectId, Long noteId) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new CustomException(ApiResponseNoteEnum.NOTE_NOT_EXIST));
+
+        boolean isUploader = member.getId().equals(note.getUploader().getId());
+        boolean isManager = projectMember.getRole() == ProjectRole.OWNER || projectMember.getRole() == ProjectRole.ADMIN;
+
+        if (!isUploader && !isManager) {
+            throw new CustomException(ApiResponseNoteEnum.NOT_ENOUGH_PERMISSION);
+        }
+
+        noteRepository.delete(note);
+
+    }
+
     // 프로젝트 존재 확인
     private Project checkProject(Long projectId){
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
     }
-
     // 유저가 프로젝트에 속한지 확인
+
     private ProjectMember checkRelation(Project project, Member member ){
         return projectMemberRepository.findByProjectAndMember(project, member)
                 .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
