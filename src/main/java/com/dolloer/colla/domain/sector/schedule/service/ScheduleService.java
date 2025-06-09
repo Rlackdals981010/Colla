@@ -19,6 +19,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -92,6 +95,28 @@ public class ScheduleService {
                         schedule.getStartAt(),
                         schedule.getEndAt(),
                         schedule.getManager().getUsername()
+                        )
+                )
+                .toList();
+        return new ScheduleListResponse(scheduleList);
+    }
+
+    public ScheduleListResponse getScheduleListAt(Member member, Long projectId, LocalDate date) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // 23:59:59.999...
+
+        List<Schedule> schedules= scheduleRepository.findSchedulesWithinDate(project,startOfDay,endOfDay);
+
+        List<ScheduleResponse> scheduleList = schedules.stream()
+                .map( schedule -> new ScheduleResponse(
+                                schedule.getTitle(),
+                                schedule.getDescription(),
+                                schedule.getStartAt(),
+                                schedule.getEndAt(),
+                                schedule.getManager().getUsername()
                         )
                 )
                 .toList();
