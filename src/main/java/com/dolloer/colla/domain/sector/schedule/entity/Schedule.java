@@ -57,4 +57,23 @@ public class Schedule {
         this.project = project;
         this.manager = manager;
     }
+
+    public void updateTitle(String title){
+        this.title = title;
+    }
+    public void updateDescription(String description){
+        this.description = description;
+    }
+    public void updateStartAt(LocalDateTime startAt){
+        this.startAt = startAt;
+    }
+    public void updateEndAt(LocalDateTime endAt){
+        this.endAt = endAt;
+    }
+    public void updateManager(Member manager){
+        this.manager = manager;
+    }
+    public void updatePercent(Long percent){
+        this.percent = percent;
+    }
 }

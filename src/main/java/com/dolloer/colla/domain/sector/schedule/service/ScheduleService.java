@@ -4,9 +4,11 @@ import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.auth.repository.AuthRepository;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
+import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleCreate;
+import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleUpdate;
 import com.dolloer.colla.domain.sector.schedule.dto.response.ScheduleListResponse;
 import com.dolloer.colla.domain.sector.schedule.dto.response.ScheduleResponse;
 import com.dolloer.colla.domain.sector.schedule.entity.Schedule;
@@ -17,6 +19,7 @@ import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import com.dolloer.colla.response.response.ApiResponseScheduleEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -26,6 +29,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
@@ -46,7 +50,7 @@ public class ScheduleService {
     }
 
     // 담당자 찾기
-    private Member checkMember(String email, Project project){
+    private Member checkManager(String email, Project project){
 
         Member member = authRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ApiResponseAuthEnum.MEMBER_NOT_EXIST));
@@ -66,7 +70,7 @@ public class ScheduleService {
             throw new CustomException(ApiResponseScheduleEnum.INVALID_SCHEDULE_DATE);
         }
 
-        Member manager = checkMember(scheduleCreate.getEmail(),project);
+        Member manager = checkManager(scheduleCreate.getEmail(),project);
 
 
         Schedule newSchedule = new Schedule(
@@ -121,5 +125,51 @@ public class ScheduleService {
                 )
                 .toList();
         return new ScheduleListResponse(scheduleList);
+    }
+
+    @Transactional
+    public void updateSchedule(Member member, Long projectId, Long scheduleId, ScheduleUpdate scheduleUpdate) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new CustomException(ApiResponseScheduleEnum.SCHEDULE_NOT_EXIST));
+
+        if (!schedule.getProject().equals(project)) {
+            throw new CustomException(ApiResponseScheduleEnum.SCHEDULE_PROJECT_DOESNT_MATCH);
+        }
+
+        boolean isManager = schedule.getManager().getId().equals(member.getId());
+        boolean isPrivileged = projectMember.getRole() == ProjectRole.ADMIN || projectMember.getRole() == ProjectRole.OWNER;
+
+        if (!isManager && !isPrivileged) {
+            throw new CustomException(ApiResponseScheduleEnum.NOT_SCHEDULE_MANAGER);
+        }
+
+        if (scheduleUpdate.getTitle() != null) {
+            schedule.updateTitle(scheduleUpdate.getTitle());
+        }
+
+        if (scheduleUpdate.getDescription() != null) {
+            schedule.updateDescription(scheduleUpdate.getDescription());
+        }
+
+        LocalDateTime newStartAt = scheduleUpdate.getStartAt() != null ? scheduleUpdate.getStartAt() : schedule.getStartAt();
+        LocalDateTime newEndAt = scheduleUpdate.getEndAt() != null ? scheduleUpdate.getEndAt() : schedule.getEndAt();
+
+        if (newStartAt.isAfter(newEndAt) || newStartAt.isEqual(newEndAt)) {
+            throw new CustomException(ApiResponseScheduleEnum.INVALID_SCHEDULE_DATE);
+        }
+
+        if (scheduleUpdate.getStartAt() != null) {
+            schedule.updateStartAt(scheduleUpdate.getStartAt());
+        }
+        if (scheduleUpdate.getEndAt() != null) {
+            schedule.updateEndAt(scheduleUpdate.getEndAt());
+        }
+
+        if (scheduleUpdate.getEmail() != null) {
+            schedule.updateManager(checkManager(scheduleUpdate.getEmail(), project));
+        }
     }
 }
