@@ -56,8 +56,5 @@ public class Schedule {
         this.percent = 0L;
         this.project = project;
         this.manager = manager;
-
-
-
     }
 }

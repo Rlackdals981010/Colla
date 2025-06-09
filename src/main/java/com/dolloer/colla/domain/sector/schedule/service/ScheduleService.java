@@ -7,6 +7,8 @@ import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleCreate;
+import com.dolloer.colla.domain.sector.schedule.dto.response.ScheduleListResponse;
+import com.dolloer.colla.domain.sector.schedule.dto.response.ScheduleResponse;
 import com.dolloer.colla.domain.sector.schedule.entity.Schedule;
 import com.dolloer.colla.domain.sector.schedule.repository.ScheduleRepository;
 import com.dolloer.colla.response.exception.CustomException;
@@ -16,6 +18,8 @@ import com.dolloer.colla.response.response.ApiResponseScheduleEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -72,5 +76,25 @@ public class ScheduleService {
         );
 
         scheduleRepository.save(newSchedule);
+    }
+
+    // 전체 조회
+    public ScheduleListResponse getScheduleList(Member member, Long projectId) {
+        Project project = checkProject(projectId);
+        checkRelation(project, member);
+
+        List<Schedule> schedules= scheduleRepository.findAllByProject(project);
+
+        List<ScheduleResponse> scheduleList = schedules.stream()
+                .map( schedule -> new ScheduleResponse(
+                        schedule.getTitle(),
+                        schedule.getDescription(),
+                        schedule.getStartAt(),
+                        schedule.getEndAt(),
+                        schedule.getManager().getUsername()
+                        )
+                )
+                .toList();
+        return new ScheduleListResponse(scheduleList);
     }
 }
