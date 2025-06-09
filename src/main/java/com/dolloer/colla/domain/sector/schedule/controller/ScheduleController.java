@@ -1,6 +1,7 @@
 package com.dolloer.colla.domain.sector.schedule.controller;
 
 
+import com.dolloer.colla.domain.sector.schedule.dto.request.ProcessRequest;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleCreate;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleUpdate;
 import com.dolloer.colla.domain.sector.schedule.dto.response.ScheduleListResponse;
@@ -65,7 +66,19 @@ public class ScheduleController {
         scheduleService.updateSchedule(authUser.getMember(),projectId,scheduleId,scheduleUpdate);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseScheduleEnum.SCHEDULE_UPDATE_SUCCESS.getMessage()));
     }
+
     // 일정 진행률 업데이트
+    @PatchMapping("/{scheduleId}/process")
+    public ResponseEntity<ApiResponse<Void>> updateProcess(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long scheduleId,
+            @RequestBody ProcessRequest processRequest
+    ){
+        scheduleService.updateProcess(authUser.getMember(),projectId,scheduleId,processRequest);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseScheduleEnum.SCHEDULE_PROCESS_UPDATE_SUCCESS.getMessage()));
+    }
+
     // 삭제
 
 

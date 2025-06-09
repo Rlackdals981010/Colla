@@ -10,6 +10,7 @@ public enum ApiResponseScheduleEnum implements ApiResponseEnum {
     SCHEDULE_GET_LIST_SUCCESS(HttpStatus.OK,"스케줄 전체 조회에 성공하였습니다."),
     SCHEDULE_GET_LIST_AT_SUCCESS(HttpStatus.OK,"특정 일자의 스케줄 전체 조회에 성공하였습니다."),
     SCHEDULE_UPDATE_SUCCESS(HttpStatus.OK,"스케줄 수정에 성공하였습니다."),
+    SCHEDULE_PROCESS_UPDATE_SUCCESS(HttpStatus.OK,"진행률 수정에 성공하였습니다."),
 
     // 400
     INVALID_SCHEDULE_DATE(HttpStatus.BAD_REQUEST, "시작일은 종료일보다 앞서야 합니다."),

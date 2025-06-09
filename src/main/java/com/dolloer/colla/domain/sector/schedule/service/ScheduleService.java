@@ -7,6 +7,7 @@ import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
+import com.dolloer.colla.domain.sector.schedule.dto.request.ProcessRequest;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleCreate;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleUpdate;
 import com.dolloer.colla.domain.sector.schedule.dto.response.ScheduleListResponse;
@@ -171,5 +172,25 @@ public class ScheduleService {
         if (scheduleUpdate.getEmail() != null) {
             schedule.updateManager(checkManager(scheduleUpdate.getEmail(), project));
         }
+    }
+
+    @Transactional
+    public void updateProcess(Member member, Long projectId, Long scheduleId, ProcessRequest processRequest) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new CustomException(ApiResponseScheduleEnum.SCHEDULE_NOT_EXIST));
+
+        if (!schedule.getProject().equals(project)) {
+            throw new CustomException(ApiResponseScheduleEnum.SCHEDULE_PROJECT_DOESNT_MATCH);
+        }
+
+        boolean isManager = schedule.getManager().getId().equals(member.getId());
+
+        if (!isManager) {
+            throw new CustomException(ApiResponseScheduleEnum.NOT_SCHEDULE_MANAGER);
+        }
+        schedule.updatePercent(processRequest.getProcess());
     }
 }
