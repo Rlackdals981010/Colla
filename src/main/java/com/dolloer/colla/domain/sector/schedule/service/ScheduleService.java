@@ -22,6 +22,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -136,7 +137,7 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new CustomException(ApiResponseScheduleEnum.SCHEDULE_NOT_EXIST));
 
-        if (!schedule.getProject().equals(project)) {
+        if (!schedule.getProject().getId().equals(project.getId())) {
             throw new CustomException(ApiResponseScheduleEnum.SCHEDULE_PROJECT_DOESNT_MATCH);
         }
 
@@ -192,5 +193,27 @@ public class ScheduleService {
             throw new CustomException(ApiResponseScheduleEnum.NOT_SCHEDULE_MANAGER);
         }
         schedule.updatePercent(processRequest.getProcess());
+    }
+
+    @Transactional
+    public void deleteSchedule(Member member, Long projectId, Long scheduleId) {
+        Project project = checkProject(projectId);
+        ProjectMember projectMember = checkRelation(project, member);
+
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new CustomException(ApiResponseScheduleEnum.SCHEDULE_NOT_EXIST));
+
+        if (!schedule.getProject().getId().equals(project.getId())) {
+            throw new CustomException(ApiResponseScheduleEnum.SCHEDULE_PROJECT_DOESNT_MATCH);
+        }
+
+        boolean isManager = schedule.getManager().getId().equals(member.getId());
+        boolean isPrivileged = projectMember.getRole() == ProjectRole.ADMIN || projectMember.getRole() == ProjectRole.OWNER;
+
+        if (!isManager && !isPrivileged) {
+            throw new CustomException(ApiResponseScheduleEnum.NOT_SCHEDULE_MANAGER);
+        }
+
+        scheduleRepository.delete(schedule);
     }
 }

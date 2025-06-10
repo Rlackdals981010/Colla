@@ -80,6 +80,16 @@ public class ScheduleController {
     }
 
     // 삭제
+    @DeleteMapping("/{scheduleId}")
+    public ResponseEntity<ApiResponse<Void>> deleteSchedule(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long projectId,
+            @PathVariable Long scheduleId
+    ){
+        scheduleService.deleteSchedule(authUser.getMember(),projectId,scheduleId);
+        return ResponseEntity.ok(ApiResponse.success(ApiResponseScheduleEnum.SCHEDULE_DELETE_SUCCESS.getMessage()));
+
+    }
 
 
 
