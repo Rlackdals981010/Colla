@@ -7,7 +7,6 @@ import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
 import com.dolloer.colla.domain.sector.notice.dto.response.NoticeResponse;
 import com.dolloer.colla.domain.sector.notice.service.NoticeService;
 import com.dolloer.colla.response.response.ApiResponse;
-import com.dolloer.colla.response.response.ApiResponseLinkEnum;
 import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
 import com.dolloer.colla.security.AuthUser;
 import lombok.RequiredArgsConstructor;

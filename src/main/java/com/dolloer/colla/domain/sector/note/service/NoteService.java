@@ -1,11 +1,10 @@
 package com.dolloer.colla.domain.sector.note.service;
 
+import com.dolloer.colla.Validator.ClassValidator;
 import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
-import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
-import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.note.dto.request.NoteCreateRequest;
 import com.dolloer.colla.domain.sector.note.dto.request.NoteUpdateRequest;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteDetailResponse;
@@ -14,10 +13,7 @@ import com.dolloer.colla.domain.sector.note.dto.response.NoteResponse;
 import com.dolloer.colla.domain.sector.note.entity.Note;
 import com.dolloer.colla.domain.sector.note.repository.NoteRepository;
 import com.dolloer.colla.response.exception.CustomException;
-import com.dolloer.colla.response.response.ApiResponseFileEnum;
 import com.dolloer.colla.response.response.ApiResponseNoteEnum;
-import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
-import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,13 +25,12 @@ import java.util.List;
 public class NoteService {
 
     private final NoteRepository noteRepository;
-    private final ProjectRepository projectRepository;
-    private final ProjectMemberRepository projectMemberRepository;
+    private final ClassValidator classValidator;
 
     @Transactional
     public void createNote(Member member, Long projectId, NoteCreateRequest noteCreateRequest) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         Note newNote = new Note(noteCreateRequest.getTitle(), noteCreateRequest.getText(), member, project);
         noteRepository.save(newNote);
@@ -43,8 +38,8 @@ public class NoteService {
 
     // 리스트 조회
     public NoteListResponse getNoteList(Member member, Long projectId) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         List<Note> notes = noteRepository.findAllByProject(project);
 
@@ -63,8 +58,8 @@ public class NoteService {
 
     // 단건 디테일 조회
     public NoteDetailResponse getNote(Member member, Long projectId, Long noteId) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new CustomException(ApiResponseNoteEnum.NOTE_NOT_EXIST));
@@ -85,8 +80,8 @@ public class NoteService {
 
     // 검색
     public NoteListResponse searchNoteByTitle(Member member, Long projectId, String keyword) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         List<Note> notes = noteRepository.searchByTitle(project, keyword);
 
@@ -106,8 +101,8 @@ public class NoteService {
     // 노트 수정
     @Transactional
     public void updateNote(Member member, Long projectId, Long noteId, NoteUpdateRequest noteUpdateRequest) {
-        Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember projectMember = classValidator.checkRelation(project, member);
 
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new CustomException(ApiResponseNoteEnum.NOTE_NOT_EXIST));
@@ -130,8 +125,8 @@ public class NoteService {
     // 노트 삭제
     @Transactional
     public void deleteNote(Member member, Long projectId, Long noteId) {
-        Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember projectMember = classValidator.checkRelation(project, member);
 
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new CustomException(ApiResponseNoteEnum.NOTE_NOT_EXIST));
@@ -147,15 +142,5 @@ public class NoteService {
 
     }
 
-    // 프로젝트 존재 확인
-    private Project checkProject(Long projectId){
-        return projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
-    }
-    // 유저가 프로젝트에 속한지 확인
 
-    private ProjectMember checkRelation(Project project, Member member ){
-        return projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
-    }
 }

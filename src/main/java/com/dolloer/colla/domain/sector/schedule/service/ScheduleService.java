@@ -1,12 +1,11 @@
 package com.dolloer.colla.domain.sector.schedule.service;
 
+import com.dolloer.colla.Validator.ClassValidator;
 import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.auth.repository.AuthRepository;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
-import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
-import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ProcessRequest;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleCreate;
 import com.dolloer.colla.domain.sector.schedule.dto.request.ScheduleUpdate;
@@ -16,13 +15,11 @@ import com.dolloer.colla.domain.sector.schedule.entity.Schedule;
 import com.dolloer.colla.domain.sector.schedule.repository.ScheduleRepository;
 import com.dolloer.colla.response.exception.CustomException;
 import com.dolloer.colla.response.response.ApiResponseAuthEnum;
-import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import com.dolloer.colla.response.response.ApiResponseScheduleEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,21 +32,9 @@ import java.util.List;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
-    private final ProjectRepository projectRepository;
-    private final ProjectMemberRepository projectMemberRepository;
+    private final ClassValidator classValidator;
     private final AuthRepository authRepository;
 
-    // 프로젝트 존재 확인
-    private Project checkProject(Long projectId){
-        return projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
-    }
-
-    // 유저가 프로젝트에 속한지 확인
-    private ProjectMember checkRelation(Project project, Member member ){
-        return projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
-    }
 
     // 담당자 찾기
     private Member checkManager(String email, Project project){
@@ -57,15 +42,15 @@ public class ScheduleService {
         Member member = authRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ApiResponseAuthEnum.MEMBER_NOT_EXIST));
 
-        checkRelation(project, member);
+        classValidator.checkRelation(project, member);
         return member;
     }
 
     @Transactional
     public void createSchedule(Member member, Long projectId, ScheduleCreate scheduleCreate) {
 
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         if (scheduleCreate.getStartAt().isAfter(scheduleCreate.getEndAt()) ||
                 scheduleCreate.getStartAt().isEqual(scheduleCreate.getEndAt())) {
@@ -89,8 +74,8 @@ public class ScheduleService {
 
     // 전체 조회
     public ScheduleListResponse getScheduleList(Member member, Long projectId) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         List<Schedule> schedules= scheduleRepository.findAllByProject(project);
 
@@ -108,8 +93,8 @@ public class ScheduleService {
     }
 
     public ScheduleListResponse getScheduleListAt(Member member, Long projectId, LocalDate date) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // 23:59:59.999...
@@ -131,8 +116,8 @@ public class ScheduleService {
 
     @Transactional
     public void updateSchedule(Member member, Long projectId, Long scheduleId, ScheduleUpdate scheduleUpdate) {
-        Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember projectMember = classValidator.checkRelation(project, member);
 
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new CustomException(ApiResponseScheduleEnum.SCHEDULE_NOT_EXIST));
@@ -177,8 +162,8 @@ public class ScheduleService {
 
     @Transactional
     public void updateProcess(Member member, Long projectId, Long scheduleId, ProcessRequest processRequest) {
-        Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember projectMember = classValidator.checkRelation(project, member);
 
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new CustomException(ApiResponseScheduleEnum.SCHEDULE_NOT_EXIST));
@@ -197,8 +182,8 @@ public class ScheduleService {
 
     @Transactional
     public void deleteSchedule(Member member, Long projectId, Long scheduleId) {
-        Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember projectMember = classValidator.checkRelation(project, member);
 
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new CustomException(ApiResponseScheduleEnum.SCHEDULE_NOT_EXIST));

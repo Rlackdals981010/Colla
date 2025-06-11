@@ -1,7 +1,8 @@
 package com.dolloer.colla.domain.project.service;
 
 
-
+import com.dolloer.colla.Validator.ClassValidator;
+import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.auth.repository.AuthRepository;
 import com.dolloer.colla.domain.mail.serivce.MailService;
 import com.dolloer.colla.domain.project.dto.request.ChangeRoleRequest;
@@ -11,7 +12,6 @@ import com.dolloer.colla.domain.project.dto.response.*;
 import com.dolloer.colla.domain.project.entity.InvitationStatus;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
-import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
 import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
 import com.dolloer.colla.domain.project.repository.ProjectRepository;
@@ -35,6 +35,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final AuthRepository authRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final ClassValidator classValidator;
     private final MailService mailService;
 
     public ProjectResponse createProject(Member creator, CreateProjectRequest request) {
@@ -71,10 +72,10 @@ public class ProjectService {
     // 이메일 기반 회원 검색
     public MemberSearchResponse searchMemberByEmailForInvite(Member requester, Long projectId, String email) {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember requesterRelation = checkRelation(project, requester);
+        ProjectMember requesterRelation = classValidator.checkRelation(project, requester);
 
         if (requesterRelation.getRole() != ProjectRole.OWNER && requesterRelation.getRole() != ProjectRole.OWNER) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
@@ -90,10 +91,10 @@ public class ProjectService {
     @Transactional
     public void inviteMembers(Member inviter, Long projectId, List<Long> memberIds) throws MessagingException {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember inviterRelation = checkRelation(project, inviter);
+        ProjectMember inviterRelation = classValidator.checkRelation(project, inviter);
 
         if (!hasInvitePermission(inviterRelation)) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
@@ -125,10 +126,10 @@ public class ProjectService {
     @Transactional
     public void acceptInvitation(Member requester, Long projectId) {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = checkRelation(project, requester);
+        ProjectMember relation = classValidator.checkRelation(project, requester);
 
         if (relation.getStatus() != InvitationStatus.PENDING) {
             throw new CustomException(ApiResponseProjectEnum.ALREADY_RESPONDED);
@@ -140,10 +141,10 @@ public class ProjectService {
     @Transactional
     public void rejectInvitation(Member requester, Long projectId) {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = checkRelation(project, requester);
+        ProjectMember relation = classValidator.checkRelation(project, requester);
 
         if (relation.getStatus() != InvitationStatus.PENDING) {
             throw new CustomException(ApiResponseProjectEnum.ALREADY_RESPONDED);
@@ -175,10 +176,10 @@ public class ProjectService {
 
     public ProjectSummaryResponse getProject(Member member, Long projectId) {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = checkRelation(project, member);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         return new ProjectSummaryResponse(project.getId(),project.getName(),project.getDescription(),project.getStartDate(),project.getEndDate());
     }
@@ -186,10 +187,10 @@ public class ProjectService {
     @Transactional
     public void leaveProject(Member member, Long projectId) {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = checkRelation(project, member);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         if(relation.getRole()==ProjectRole.OWNER){
             throw new CustomException(ApiResponseProjectEnum.OWNER_CANNOT_LEAVE);
@@ -203,10 +204,10 @@ public class ProjectService {
     public ProjectSummaryResponse updateProject(Member member, Long projectId, UpdateProjectRequest updateProjectRequest) {
 
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = checkRelation(project, member);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         if (relation.getRole() != ProjectRole.OWNER && relation.getRole() != ProjectRole.OWNER) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
@@ -231,10 +232,10 @@ public class ProjectService {
     @Transactional
     public void deleteProject(Member member, Long projectId) {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = checkRelation(project, member);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         if (relation.getRole() != ProjectRole.OWNER) {
             throw new CustomException(ApiResponseProjectEnum.NOT_ENOUGH_PERMISSION);
@@ -245,10 +246,10 @@ public class ProjectService {
 
     public MemberListResponse getProjectMembers(Member member, Long projectId) {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = checkRelation(project, member);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         // 해당 프로젝트와 관계있는 멤버들
         List<ProjectMember> projectMember = projectMemberRepository.findAllByProject(project);
@@ -273,10 +274,10 @@ public class ProjectService {
     @Transactional
     public void deleteProjectMember(Member member, Long projectId, Long memberId) {
         // 존재하는 프로젝트
-        Project project = checkProject(projectId);
+        Project project = classValidator.checkProject(projectId);
 
         // 해당 프로젝트에 소속되어있는지
-        ProjectMember relation = checkRelation(project, member);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         // 멤버 권한 체크, 일반 사용자는 강퇴 불가
         if(relation.getRole()==ProjectRole.MEMBER){
@@ -330,8 +331,8 @@ public class ProjectService {
     // 멤버 권한 변경
     @Transactional
     public void changeRole(Member member, Long projectId, Long memberId, ChangeRoleRequest changeRoleRequest) {
-        Project project = checkProject(projectId);
-        ProjectMember relation = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         if (memberId.equals(member.getId())) {
             throw new CustomException(ApiResponseProjectEnum.CANNOT_CHANGE_OWN_ROLE);
@@ -347,7 +348,7 @@ public class ProjectService {
         Member target = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ApiResponseAuthEnum.MEMBER_NOT_EXIST));
 
-        ProjectMember targetRelation = checkRelation(project, target);
+        ProjectMember targetRelation = classValidator.checkRelation(project, target);
 
         // 로그인 한 사람이 변경할 역할보다 권한이 낮으면 불가능
         if (!relation.getRole().hasHigherPermissionThan(targetRelation.getRole())) {
@@ -367,16 +368,6 @@ public class ProjectService {
         targetRelation.changeRole(newRole);
     }
 
-    // 프로젝트 존재 확인
-    private Project checkProject(Long projectId){
-        return projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
-    }
 
-    // 유저가 프로젝트에 속한지 확인
-    private ProjectMember checkRelation(Project project,Member member ){
-        return projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
-    }
 }
 

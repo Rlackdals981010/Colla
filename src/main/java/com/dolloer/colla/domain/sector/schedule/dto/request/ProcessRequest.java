@@ -7,6 +7,4 @@ import lombok.Getter;
 public class ProcessRequest {
 
     public Long process;
-
-
 }

@@ -1,9 +1,9 @@
 package com.dolloer.colla.domain.project.entity;
 
+import com.dolloer.colla.domain.auth.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import com.dolloer.colla.domain.auth.entity.Member;
 
 import java.time.LocalDateTime;
 

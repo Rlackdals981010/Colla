@@ -1,11 +1,10 @@
 package com.dolloer.colla.domain.sector.file.service;
 
+import com.dolloer.colla.Validator.ClassValidator;
 import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
-import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
-import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.file.dto.response.FileDetailResponse;
 import com.dolloer.colla.domain.sector.file.dto.response.FileListResponse;
 import com.dolloer.colla.domain.sector.file.dto.response.FileResponse;
@@ -14,7 +13,6 @@ import com.dolloer.colla.domain.sector.file.repository.FileRecordRepository;
 import com.dolloer.colla.googledrive.GoogleDriveService;
 import com.dolloer.colla.response.exception.CustomException;
 import com.dolloer.colla.response.response.ApiResponseFileEnum;
-import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,13 +33,12 @@ public class FileService {
 
     private final GoogleDriveService googleDriveService;
     private final FileRecordRepository fileRecordRepository;
-    private final ProjectRepository projectRepository;
-    private final ProjectMemberRepository projectMemberRepository;
+    private final ClassValidator classValidator;
 
     @Transactional
     public void uploadFile(Long projectId, MultipartFile file, String title, String description, Member member) throws IOException, GeneralSecurityException {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         // 서비스 계정 기반 업로드
         String googleDriveFileId = googleDriveService.uploadFileAndReturnFileId(file);
@@ -60,8 +57,8 @@ public class FileService {
     }
 
     public FileListResponse getFileList(Member member, Long projectId) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         List<FileRecord> files = fileRecordRepository.findAllByProjectId(project.getId());
 
@@ -79,8 +76,8 @@ public class FileService {
     }
 
     public ByteArrayOutputStream downloadFile(Long projectId, Long fileRecordId, Member member) throws IOException, GeneralSecurityException {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         FileRecord fileRecord = fileRecordRepository.findById(fileRecordId)
                 .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
@@ -95,8 +92,8 @@ public class FileService {
 
     @Transactional
     public void deleteFile(Member member, Long projectId, Long fileId) throws GeneralSecurityException, IOException {
-        Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember projectMember = classValidator.checkRelation(project, member);
 
         FileRecord fileRecord = fileRecordRepository.findById(fileId)
                 .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
@@ -122,8 +119,8 @@ public class FileService {
             throw new CustomException(ApiResponseFileEnum.NO_UPDATE_REQUESTED);
         }
 
-        Project project = checkProject(projectId);
-        ProjectMember projectMember = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember projectMember = classValidator.checkRelation(project, member);
 
         FileRecord fileRecord = fileRecordRepository.findById(fileId)
                 .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
@@ -161,8 +158,8 @@ public class FileService {
     }
 
     public FileDetailResponse detailFile(Long projectId, Long fileId, Member member) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         FileRecord fileRecord = fileRecordRepository.findById(fileId)
                 .orElseThrow(() -> new CustomException(ApiResponseFileEnum.FILE_NOT_FOUND));
@@ -173,8 +170,8 @@ public class FileService {
 
     // 검색
     public FileListResponse searchFilesByTitle(Member member, Long projectId, String keyword) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         List<FileRecord> files = fileRecordRepository.searchByTitle(project.getId(), keyword);
 
@@ -191,13 +188,5 @@ public class FileService {
         return new FileListResponse(fileList);
     }
 
-    private Project checkProject(Long projectId) {
-        return projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
-    }
 
-    private ProjectMember checkRelation(Project project, Member member) {
-        return projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
-    }
 }

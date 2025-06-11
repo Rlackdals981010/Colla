@@ -1,7 +1,6 @@
 package com.dolloer.colla.domain.sector.file.entity;
 
 import com.dolloer.colla.domain.auth.entity.Member;
-import com.dolloer.colla.domain.project.entity.Project;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,16 +1,12 @@
 package com.dolloer.colla.domain.sector.note.controller;
 
-import com.dolloer.colla.domain.sector.link.dto.request.LinkCreateRequest;
 import com.dolloer.colla.domain.sector.note.dto.request.NoteCreateRequest;
 import com.dolloer.colla.domain.sector.note.dto.request.NoteUpdateRequest;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteDetailResponse;
 import com.dolloer.colla.domain.sector.note.dto.response.NoteListResponse;
 import com.dolloer.colla.domain.sector.note.service.NoteService;
-import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
 import com.dolloer.colla.response.response.ApiResponse;
-import com.dolloer.colla.response.response.ApiResponseLinkEnum;
 import com.dolloer.colla.response.response.ApiResponseNoteEnum;
-import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
 import com.dolloer.colla.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,5 @@
 package com.dolloer.colla.domain.sector.schedule.dto.request;
 
-import com.dolloer.colla.domain.auth.entity.Member;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

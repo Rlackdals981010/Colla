@@ -1,11 +1,10 @@
 package com.dolloer.colla.domain.sector.notice.service;
 
+import com.dolloer.colla.Validator.ClassValidator;
 import com.dolloer.colla.domain.auth.entity.Member;
 import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.project.entity.ProjectMember;
 import com.dolloer.colla.domain.project.entity.ProjectRole;
-import com.dolloer.colla.domain.project.repository.ProjectMemberRepository;
-import com.dolloer.colla.domain.project.repository.ProjectRepository;
 import com.dolloer.colla.domain.sector.notice.dto.request.NoticeCreateRequest;
 import com.dolloer.colla.domain.sector.notice.dto.request.NoticeUpdateRequest;
 import com.dolloer.colla.domain.sector.notice.dto.response.NoticeListResponse;
@@ -14,7 +13,6 @@ import com.dolloer.colla.domain.sector.notice.entity.Notice;
 import com.dolloer.colla.domain.sector.notice.repository.NoticeRepository;
 import com.dolloer.colla.response.exception.CustomException;
 import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
-import com.dolloer.colla.response.response.ApiResponseProjectEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,14 +24,14 @@ import java.util.List;
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
-    private final ProjectRepository projectRepository;
-    private final ProjectMemberRepository projectMemberRepository;
+    private final ClassValidator classValidator;
+
 
     // 생성
     @Transactional
     public void createNotice(Member member, Long projectId, NoticeCreateRequest request) {
-        Project project = checkProject(projectId);
-        ProjectMember relation = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         // 관리자만 생성 가능
         if (relation.getRole() == ProjectRole.MEMBER) {
@@ -52,8 +50,8 @@ public class NoticeService {
 
     // 전체 조회
     public NoticeListResponse getNoticeList(Member member, Long projectId) {
-        Project project = checkProject(projectId);
-        ProjectMember relation = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         List<Notice> notices = noticeRepository.findAllByProject(project);
 
@@ -72,8 +70,8 @@ public class NoticeService {
 
     // 검색 조회
     public NoticeListResponse searchNoticesByTitle(Member member, Long projectId, String keyword) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         List<Notice> notices = noticeRepository.searchByTitle(project, keyword);
 
@@ -92,8 +90,8 @@ public class NoticeService {
 
     // 단건 조회
     public NoticeResponse getNotice(Member member, Long projectId, Long noticeId) {
-        Project project = checkProject(projectId);
-        checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        classValidator.checkRelation(project, member);
 
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new CustomException(ApiResponseNoticeEnum.NOTICE_NOT_EXIST));
@@ -115,8 +113,8 @@ public class NoticeService {
     // 공지 수정
     @Transactional
     public void updateNotice(Member member, Long projectId, Long noticeId, NoticeUpdateRequest noticeUpdateRequest) {
-        Project project = checkProject(projectId);
-        ProjectMember relation = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new CustomException(ApiResponseNoticeEnum.NOTICE_NOT_EXIST));
@@ -138,8 +136,8 @@ public class NoticeService {
     // 공지 삭제
     @Transactional
     public void deleteNotice(Member member, Long projectId, Long noticeId) {
-        Project project = checkProject(projectId);
-        ProjectMember relation = checkRelation(project, member);
+        Project project = classValidator.checkProject(projectId);
+        ProjectMember relation = classValidator.checkRelation(project, member);
 
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new CustomException(ApiResponseNoticeEnum.NOTICE_NOT_EXIST));
@@ -152,15 +150,5 @@ public class NoticeService {
         noticeRepository.delete(notice);
     }
 
-    // 프로젝트 존재 확인
-    private Project checkProject(Long projectId){
-        return projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.PROJECT_NOT_EXIST));
-    }
 
-    // 유저가 프로젝트에 속한지 확인
-    private ProjectMember checkRelation(Project project, Member member ){
-        return projectMemberRepository.findByProjectAndMember(project, member)
-                .orElseThrow(() -> new CustomException(ApiResponseProjectEnum.NOT_THIS_PROJECT_MEMBER));
-    }
 }

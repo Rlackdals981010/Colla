@@ -1,8 +1,6 @@
 package com.dolloer.colla.domain.sector.file.repository;
 
-import com.dolloer.colla.domain.project.entity.Project;
 import com.dolloer.colla.domain.sector.file.entity.FileRecord;
-import com.dolloer.colla.domain.sector.link.entity.Link;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
