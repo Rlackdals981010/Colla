@@ -11,30 +11,20 @@ public enum ApiResponseProjectEnum implements ApiResponseEnum {
     PROJECT_GET_SUCCESS(HttpStatus.OK,"프로젝트 단건 조회에 성공하였습니다."),
     PROJECT_INVITE_SUCCESS(HttpStatus.OK,"프로젝트 초대에 성공하였습니다."),
     PROJECT_LEAVE_SUCCESS(HttpStatus.OK,"프로젝트 탈퇴에 성공하였습니다."),
-    PROJECT_UPDATE_SUCCESS(HttpStatus.OK,"프로젝트 수정에 성공하였습니다."),
-    PROJECT_DELETE_SUCCESS(HttpStatus.OK,"프로젝트 삭제에 성공하였습니다."),
     PROJECT_MEMBERS_GET_SUCCESS(HttpStatus.OK,"프로젝트 멤버 조회에 성공하였습니다."),
     PROJECT_MEMBERS_DELETE_SUCCESS(HttpStatus.OK,"프로젝트 멤버 강퇴에 성공하였습니다."),
-    PROJECT_INVITED_GET_SUCCESS(HttpStatus.OK,"초대받은 프로젝트 조회에 성공하였습니다."),
     PROJECT_MEMBER_ROLE_CHANGE_SUCCESS(HttpStatus.OK,"권한 변경에 성공하였습니다."),
 
 
-    // 400
-    MEMBER_ALREADY_EXIST(HttpStatus.BAD_REQUEST,"이미 회원가입된 회원 입니다."),
     MEMBER_NOT_EXIST(HttpStatus.BAD_REQUEST,"본 서비스 회원이 아닙니다."),
-    PROJECT_MEMBER_NOT_EXIST(HttpStatus.BAD_REQUEST,"속한 프로젝트가 없습니다."),
 
-    //401
-    MEMBER_WRONG_PASSWORD(HttpStatus.UNAUTHORIZED,"비밀번호가 틀렸습니다."),
 
     // 403
     NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
     NOT_THIS_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"해당 프로젝트의 맴버가 아닙니다."),
     NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다."),
-    NOT_MATCHING_USER(HttpStatus.FORBIDDEN,"해당 멤버가 아닙니다."),
     CANNOT_REMOVE_SELF(HttpStatus.FORBIDDEN,"스스로는 강퇴가 불가능 합니다."),
     CANNOT_REMOVE_OWNER(HttpStatus.FORBIDDEN,"OWNER는 강퇴가 불가능 합니다."),
-    NOT_INVITED_MEMBER(HttpStatus.FORBIDDEN,"초대한 멤버가 아닙니다."),
     ALREADY_RESPONDED(HttpStatus.FORBIDDEN,"이미 응답한 상태입니다."),
     OWNER_CANNOT_LEAVE(HttpStatus.FORBIDDEN,"프로젝트 생성자는 탈퇴할 수 없습니다."),
     CANNOT_CHANGE_OWN_ROLE(HttpStatus.FORBIDDEN,"본인의 권한은 변경할 수 없습니다."),

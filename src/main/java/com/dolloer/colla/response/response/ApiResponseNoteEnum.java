@@ -13,20 +13,9 @@ public enum ApiResponseNoteEnum implements ApiResponseEnum {
     NOTE_UPDATE_SUCCESS(HttpStatus.OK,"노트(회의록) 수정에 성공하였습니다."),
     NOTE_DELETE_SUCCESS(HttpStatus.OK,"노트(회의록) 삭제에 성공하였습니다."),
 
-    // 400
-    DUPLICATED_LINK(HttpStatus.BAD_REQUEST,"동일한 링크가 존재합니다."),
-
-    //401
-    MEMBER_WRONG_PASSWORD(HttpStatus.UNAUTHORIZED,"비밀번호가 틀렸습니다."),
-
-    // 403
-    NOT_PROJECT_MEMBER(HttpStatus.FORBIDDEN,"존재하지 않는 맴버 입니다."),
     NOT_THIS_PROJECT_NOTICE(HttpStatus.FORBIDDEN,"해당 프로젝트의 노트가 아닙니다."),
     NOTE_NOT_EXIST(HttpStatus.FORBIDDEN,"존재하지 않는 회의록 입니다."),
-    NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다."),
-
-    //404
-    LINK_NOT_EXIST(HttpStatus.NOT_FOUND,"존재하지 않는 링크 글 입니다.");
+    NOT_ENOUGH_PERMISSION(HttpStatus.FORBIDDEN,"해당 기능을 사용할 수 있는 권한이 아닙니다.");
 
     private final HttpStatus httpStatus;
     private final int code;

@@ -17,17 +17,12 @@ public enum ApiResponseScheduleEnum implements ApiResponseEnum {
     INVALID_SCHEDULE_DATE(HttpStatus.BAD_REQUEST, "시작일은 종료일보다 앞서야 합니다."),
 
     //401
-    MEMBER_WRONG_PASSWORD(HttpStatus.UNAUTHORIZED,"비밀번호가 틀렸습니다."),
 
     // 403
     SCHEDULE_NOT_EXIST(HttpStatus.FORBIDDEN,"일정이 존재하지 않습니다."),
     SCHEDULE_PROJECT_DOESNT_MATCH(HttpStatus.FORBIDDEN,"본 프로젝트의 일정이 아닙니다."),
-    NOT_SCHEDULE_MANAGER(HttpStatus.FORBIDDEN,"담당자가 아닙니다."),
-
-
-
+    NOT_SCHEDULE_MANAGER(HttpStatus.FORBIDDEN,"담당자가 아닙니다.");
     //404
-    LINK_NOT_EXIST(HttpStatus.NOT_FOUND,"존재하지 않는 링크 글 입니다.");
 
     private final HttpStatus httpStatus;
     private final int code;
