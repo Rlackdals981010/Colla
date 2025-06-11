@@ -8,6 +8,7 @@ import com.dolloer.colla.domain.sector.link.service.LinkService;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseLinkEnum;
 import com.dolloer.colla.security.AuthUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +26,7 @@ public class LinkController {
     public ResponseEntity<ApiResponse<Void>> createLink(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId,
-            @RequestBody LinkCreateRequest linkCreateRequest
+            @Valid @RequestBody LinkCreateRequest linkCreateRequest
     ) {
         linkService.createLink(authUser.getMember(), projectId,linkCreateRequest);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseLinkEnum.LINK_CREATE_SUCCESS.getMessage()));
@@ -57,7 +58,7 @@ public class LinkController {
     public ResponseEntity<ApiResponse<LinkResponse>> updateLink(@AuthenticationPrincipal AuthUser authUser,
                                                                 @PathVariable Long projectId,
                                                                 @PathVariable Long linkId,
-                                                                @RequestBody LinkUpdateRequest linkUpdateRequest
+                                                                @Valid @RequestBody LinkUpdateRequest linkUpdateRequest
                                                                 ){
         LinkResponse result = linkService.updateLink(authUser.getMember(),projectId, linkId,linkUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success(result, ApiResponseLinkEnum.LINK_UPDATE_SUCCESS.getMessage()));

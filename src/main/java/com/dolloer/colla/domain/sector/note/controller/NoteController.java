@@ -8,6 +8,7 @@ import com.dolloer.colla.domain.sector.note.service.NoteService;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseNoteEnum;
 import com.dolloer.colla.security.AuthUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +26,7 @@ public class NoteController {
     public ResponseEntity<ApiResponse<Void>> createNote(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId,
-            @RequestBody NoteCreateRequest noteCreateRequest
+            @Valid @RequestBody NoteCreateRequest noteCreateRequest
     ){
         noteService.createNote(authUser.getMember(), projectId, noteCreateRequest);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseNoteEnum.NOTE_CREATE_SUCCESS.getMessage()));
@@ -69,7 +70,7 @@ public class NoteController {
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId,
             @PathVariable Long noteId,
-            @RequestBody NoteUpdateRequest noteUpdateRequest
+            @Valid @RequestBody NoteUpdateRequest noteUpdateRequest
     ){
         noteService.updateNote(authUser.getMember(),projectId,noteId,noteUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseNoteEnum.NOTE_UPDATE_SUCCESS.getMessage()));

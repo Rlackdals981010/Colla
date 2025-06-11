@@ -9,6 +9,7 @@ import com.dolloer.colla.domain.sector.notice.service.NoticeService;
 import com.dolloer.colla.response.response.ApiResponse;
 import com.dolloer.colla.response.response.ApiResponseNoticeEnum;
 import com.dolloer.colla.security.AuthUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -58,7 +59,7 @@ public class NoticeController {
     public ResponseEntity<ApiResponse<Void>> createNotice(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId,
-            @RequestBody NoticeCreateRequest noticeCreateRequest
+            @Valid @RequestBody NoticeCreateRequest noticeCreateRequest
     ){
         noticeService.createNotice(authUser.getMember(),projectId,noticeCreateRequest);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseNoticeEnum.NOTICE_CREATE_SUCCESS.getMessage()));
@@ -70,7 +71,7 @@ public class NoticeController {
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long projectId,
             @PathVariable Long noticeId,
-            @RequestBody NoticeUpdateRequest noticeUpdateRequest
+            @Valid @RequestBody NoticeUpdateRequest noticeUpdateRequest
     ){
         noticeService.updateNotice(authUser.getMember(), projectId, noticeId,noticeUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success(ApiResponseNoticeEnum.NOTICE_UPDATE_SUCCESS.getMessage()));
